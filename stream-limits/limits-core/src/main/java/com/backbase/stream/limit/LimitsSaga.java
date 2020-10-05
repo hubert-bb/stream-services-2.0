@@ -1,13 +1,16 @@
 package com.backbase.stream.limit;
 
-import com.backbase.dbs.limit.service.api.LimitsApi;
-import com.backbase.dbs.limit.service.model.CreateLimitRequest;
+import com.backbase.dbs.limit.integration.api.LimitsApi;
+import com.backbase.dbs.limit.integration.model.IngestedLimit;
 import com.backbase.stream.worker.StreamTaskExecutor;
 import com.backbase.stream.worker.exception.StreamTaskException;
+import java.util.Collections;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@RequiredArgsConstructor
 public class LimitsSaga implements StreamTaskExecutor<LimitsTask> {
 
     public static final String LIMIT = "limit";
@@ -16,22 +19,18 @@ public class LimitsSaga implements StreamTaskExecutor<LimitsTask> {
     public static final String ERROR = "error";
     public static final String CREATED_SUCCESSFULLY = "Limit created successfully";
     public static final String FAILED_TO_INGEST_LIMITS = "Failed to ingest limits";
-    private LimitsApi limitsApi;
-
-    public LimitsSaga(LimitsApi limitsApi) {
-        this.limitsApi = limitsApi;
-    }
+    private final LimitsApi limitsApi;
 
     @Override
     public Mono<LimitsTask> executeTask(LimitsTask limitsTask) {
-        CreateLimitRequest item = limitsTask.getData();
+        IngestedLimit item = limitsTask.getData();
 
 
         log.info("Started ingestion of transactions for user {}", item.getUserBBID());
-        return limitsApi.postLimits(item)
-                .map(createLimitResponse -> {
-                    limitsTask.setResponse(createLimitResponse);
-                    limitsTask.info(LIMIT, CREATE, SUCCESS, item.getUserBBID(), createLimitResponse.getUuid(), CREATED_SUCCESSFULLY);
+        return limitsApi.putLimits(Collections.singletonList(item))
+                .map(limitIngestionReport -> {
+                    limitsTask.setResponse(limitIngestionReport);
+                    limitsTask.info(LIMIT, CREATE, SUCCESS, item.getUserBBID(), limitIngestionReport.getIngestionStats().toString(), CREATED_SUCCESSFULLY);
                     return limitsTask;
                 })
                 .onErrorResume(throwable -> {

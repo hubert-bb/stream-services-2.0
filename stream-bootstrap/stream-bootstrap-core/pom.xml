@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <stream-services.version>1.1.0-SNAPSHOT</stream-services.version>
+    </properties>
+
+    <parent>
+        <groupId>com.backbase.stream</groupId>
+        <artifactId>stream-bootstrap</artifactId>
+        <version>3.0.0</version>
+    </parent>
+
+    <artifactId>stream-bootstrap-core</artifactId>
+    <version>3.0.0</version>
+
+    <packaging>jar</packaging>
+    <name>Stream :: Services :: Bootstrap</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.backbase.stream</groupId>
+            <artifactId>legal-entity-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.backbase.stream</groupId>
+            <artifactId>product-catalog-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+
+    </dependencies>
+
+
+</project>

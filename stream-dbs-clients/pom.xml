@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-services</artifactId>
-        <version>2.7.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <artifactId>stream-dbs-clients</artifactId>
@@ -15,7 +15,7 @@
 
     <properties>
         <sonar.skip>true</sonar.skip>
-        <boat-maven-plugin.version>0.2.2</boat-maven-plugin.version>
+        <boat-maven-plugin.version>0.2.4</boat-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -44,21 +44,34 @@
         </dependency>
 
         <dependency>
-            <groupId>com.backbase.dbs.accesscontrol</groupId>
-            <artifactId>access-control-spec</artifactId>
+            <groupId>com.backbase.dbs.legalentity</groupId>
+            <artifactId>legalentity-integration-spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.backbase.dbs.account</groupId>
-            <artifactId>account-presentation-spec</artifactId>
+            <groupId>com.backbase.dbs.accessgroup</groupId>
+            <artifactId>accessgroup-integration-spec</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.backbase.dbs.arrangement</groupId>
-            <artifactId>arrangement-pandp-query-spec</artifactId>
+            <artifactId>arrangement-integration-spec</artifactId>
             <scope>provided</scope>
+<!--            <version>${arrangement-manager.version}</version>-->
+<!--            <type>jar</type>-->
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.backbase.dbs.account</groupId>-->
+<!--            <artifactId>account-presentation-spec</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.backbase.dbs.arrangement</groupId>-->
+<!--            <artifactId>arrangement-pandp-query-spec</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.backbase.dbs.audit</groupId>
             <artifactId>audit-spec</artifactId>
@@ -69,11 +82,11 @@
             <artifactId>transaction-integration-external-inbound-spec</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.backbase.dbs.transaction</groupId>
-            <artifactId>transaction-presentation-spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.backbase.dbs.transaction</groupId>-->
+<!--            <artifactId>transaction-presentation-spec</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.backbase.dbs.user</groupId>
             <artifactId>user-manager-spec</artifactId>
@@ -125,66 +138,56 @@
                                 <schema>ArrangemenItemBase</schema>
                                 <schema>ArrangementBaseItem</schema>
                                 <schema>ArrangementItemPost</schema>
+                                <schema>Base</schema>
+                                <schema>PostArrangement</schema>
+                                <schema>ArrangementItemResponseBody</schema>
                             </addAdditionalProperties>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>accesscontrol-pandp-query-spec</id>
+                        <id>accesscontrol-integration-spec</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-webclient-embedded</goal>
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/accesscontrol/access-control-spec/accesscontrol-pandp-query-spec/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/accessgroup/accessgroup-integration-spec/service-api/service-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.accesscontrol.query.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.accesscontrol.query.service.api</apiPackage>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>accessgroup-presentation-spec</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-webclient-embedded</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/accesscontrol/access-control-spec/accessgroup-presentation-spec/service-api/openapi.yaml
-                            </inputSpec>
-                            <modelPackage>com.backbase.dbs.accessgroup.presentation.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.accessgroup.presentation.service.api</apiPackage>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>legalentity-presentation-spec</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-webclient-embedded</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/accesscontrol/access-control-spec/legalentity-presentation-spec/service-api/openapi.yaml
-                            </inputSpec>
-                            <modelPackage>com.backbase.dbs.legalentity.presentation.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.legalentity.presentation.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.accesscontrol.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.accesscontrol.integration.api</apiPackage>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>accounts-presentation-service</id>
+                        <id>legalentity-integration-spec</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-webclient-embedded</goal>
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/account/account-presentation-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/legalentity/legalentity-integration-spec/service-api/service-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.accounts.presentation.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.accounts.presentation.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.legalentity.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.legalentity.integration.api</apiPackage>
                         </configuration>
                     </execution>
+
+<!--                    <execution>-->
+<!--                        <id>accounts-presentation-service</id>-->
+<!--                        <phase>generate-sources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>generate-webclient-embedded</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <inputSpec>-->
+<!--                                ${project.basedir}/api/com/backbase/dbs/account/account-presentation-spec/service-api/service-api/openapi.yaml-->
+<!--                            </inputSpec>-->
+<!--                            <modelPackage>com.backbase.dbs.accounts.presentation.service.model</modelPackage>-->
+<!--                            <apiPackage>com.backbase.dbs.accounts.presentation.service.api</apiPackage>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
                     <execution>
                         <id>user-manager-service</id>
                         <phase>generate-sources</phase>
@@ -193,40 +196,40 @@
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/user/user-manager-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/user/user-manager-spec/integration-api/integration-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.user.presentation.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.user.presentation.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.user.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.user.integration.api</apiPackage>
                         </configuration>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>user-pnp-command-service</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>generate-webclient-embedded</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>-->
-<!--                                ${project.basedir}/api/com/backbase/dbs/user/user-pandp-command-spec/service-api/service-api/openapi.yaml-->
-<!--                            </inputSpec>-->
-<!--                            <modelPackage>com.backbase.dbs.user.pandp.command.service.model</modelPackage>-->
-<!--                            <apiPackage>com.backbase.dbs.user.pandp.command.service.api</apiPackage>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                    <execution>-->
-<!--                        <id>user-pnp-query-service</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>generate-webclient-embedded</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>-->
-<!--                                ${project.basedir}/api/com/backbase/dbs/user/user-pandp-query-spec/service-api/service-api/openapi.yaml-->
-<!--                            </inputSpec>-->
-<!--                            <modelPackage>com.backbase.dbs.user.pandp.query.service.model</modelPackage>-->
-<!--                            <apiPackage>com.backbase.dbs.user.pandp.query.service.api</apiPackage>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
+                    <!--                    <execution>-->
+                    <!--                        <id>user-pnp-command-service</id>-->
+                    <!--                        <phase>generate-sources</phase>-->
+                    <!--                        <goals>-->
+                    <!--                            <goal>generate-webclient-embedded</goal>-->
+                    <!--                        </goals>-->
+                    <!--                        <configuration>-->
+                    <!--                            <inputSpec>-->
+                    <!--                                ${project.basedir}/api/com/backbase/dbs/user/user-pandp-command-spec/service-api/service-api/openapi.yaml-->
+                    <!--                            </inputSpec>-->
+                    <!--                            <modelPackage>com.backbase.dbs.user.pandp.command.service.model</modelPackage>-->
+                    <!--                            <apiPackage>com.backbase.dbs.user.pandp.command.service.api</apiPackage>-->
+                    <!--                        </configuration>-->
+                    <!--                    </execution>-->
+                    <!--                    <execution>-->
+                    <!--                        <id>user-pnp-query-service</id>-->
+                    <!--                        <phase>generate-sources</phase>-->
+                    <!--                        <goals>-->
+                    <!--                            <goal>generate-webclient-embedded</goal>-->
+                    <!--                        </goals>-->
+                    <!--                        <configuration>-->
+                    <!--                            <inputSpec>-->
+                    <!--                                ${project.basedir}/api/com/backbase/dbs/user/user-pandp-query-spec/service-api/service-api/openapi.yaml-->
+                    <!--                            </inputSpec>-->
+                    <!--                            <modelPackage>com.backbase.dbs.user.pandp.query.service.model</modelPackage>-->
+                    <!--                            <apiPackage>com.backbase.dbs.user.pandp.query.service.api</apiPackage>-->
+                    <!--                        </configuration>-->
+                    <!--                    </execution>-->
                     <execution>
                         <id>transaction-presentation-service</id>
                         <phase>generate-sources</phase>
@@ -235,10 +238,10 @@
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/transaction/transaction-presentation-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/transaction/transaction-integration-external-inbound-spec/integration-api/integration-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.transaction.presentation.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.transaction.presentation.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.transaction.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.transaction.integration.api</apiPackage>
                         </configuration>
                     </execution>
                     <execution>
@@ -249,38 +252,38 @@
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/audit/audit-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/audit/audit-spec/integration-api/integration-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.audit.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.audit.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.integration.api</apiPackage>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>limits-presentation-service</id>
+                        <id>limits-integration-service</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-webclient-embedded</goal>
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/limit/limit-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/limit/limit-spec/integration-api/integration-api/openapi.yaml
                             </inputSpec>
-                            <apiPackage>com.backbase.dbs.limit.service.api</apiPackage>
-                            <modelPackage>com.backbase.dbs.limit.service.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.limit.integration.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.limit.integration.model</modelPackage>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>arrangement-pandp-query</id>
+                        <id>arrangement-integration-spec</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-webclient-embedded</goal>
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/arrangement/arrangement-pandp-query-spec/service-api/service-api/openapi.yaml
+                                ${project.basedir}/api/com/backbase/dbs/arrangement/arrangement-integration-spec/integration-api/integration-api/openapi.yaml
                             </inputSpec>
-                            <modelPackage>com.backbase.dbs.arrangement.pandp.query.service.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.arrangement.pandp.query.service.api</apiPackage>
+                            <modelPackage>com.backbase.dbs.arrangement.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.arrangement.integration.api</apiPackage>
                         </configuration>
                     </execution>
                 </executions>

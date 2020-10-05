@@ -1,6 +1,7 @@
 package com.backbase.stream.product;
 
 import com.backbase.dbs.accounts.presentation.service.model.ArrangementItemPost;
+import com.backbase.dbs.arrangement.integration.model.PostArrangement;
 import com.backbase.stream.legalentity.model.BaseProductGroup;
 import com.backbase.stream.legalentity.model.BatchProductGroup;
 import com.backbase.stream.legalentity.model.BusinessFunctionGroup;
@@ -120,17 +121,17 @@ public class BatchProductIngestionSaga extends ProductIngestionSaga {
     }
 
     protected Mono<BatchProductGroupTask> upsertArrangementsBatch(BatchProductGroupTask batchProductGroupTask) {
-        List<ArrangementItemPost> batchArrangements = new ArrayList<>();
+        List<PostArrangement> batchArrangements = new ArrayList<>();
         batchProductGroupTask.getData().getProductGroups().forEach(pg -> batchArrangements.addAll(
                 Stream.of(
-                        StreamUtils.nullableCollectionToStream(pg.getCurrentAccounts()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getSavingAccounts()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getDebitCards()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getCreditCards()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getLoans()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getTermDeposits()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getInvestmentAccounts()).map(productMapper::toPresentation),
-                        StreamUtils.nullableCollectionToStream(pg.getCustomProducts()).map(productMapper::toPresentation)
+                        StreamUtils.nullableCollectionToStream(pg.getCurrentAccounts()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getSavingAccounts()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getDebitCards()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getCreditCards()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getLoans()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getTermDeposits()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getInvestmentAccounts()).map(productMapper::toIntegration),
+                        StreamUtils.nullableCollectionToStream(pg.getCustomProducts()).map(productMapper::toIntegration)
                 )
                         .flatMap(i -> i)
                         .map(product -> ensureLegalEntityId(pg.getUsers(), product))
@@ -139,15 +140,15 @@ public class BatchProductIngestionSaga extends ProductIngestionSaga {
         // Insert  without duplicates.
         // TODO: Revert this change when either OpenAPI generated methods can call super in equals
         // or if the product spec is modified to mitigate the issue
-        List<ArrangementItemPost> itemsToUpsert = batchArrangements.stream()
+        List<PostArrangement> itemsToUpsert = batchArrangements.stream()
             .filter(distinctByKeys(
-                ArrangementItemPost::getExternalArrangementId,
-                ArrangementItemPost::getExternalLegalEntityIds,
-                ArrangementItemPost::getExternalProductId,
-                ArrangementItemPost::getExternalStateId,
-                ArrangementItemPost::getProductId,
-                ArrangementItemPost::getAlias,
-                ArrangementItemPost::getAdditions
+                PostArrangement::getId,
+                PostArrangement::getLegalEntityIds,
+                PostArrangement::getProductId,
+                PostArrangement::getStateId,
+                PostArrangement::getProductId,
+                PostArrangement::getBankAlias,
+                PostArrangement::getAdditions
             )).collect(Collectors.toList());
 
         Set<String> upsertedInternalIds = new HashSet<>();

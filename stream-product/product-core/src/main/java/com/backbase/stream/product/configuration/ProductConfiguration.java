@@ -1,6 +1,7 @@
 package com.backbase.stream.product.configuration;
 
-import com.backbase.dbs.accounts.presentation.service.api.ArrangementsApi;
+import com.backbase.dbs.arrangement.integration.ApiClient;
+import com.backbase.dbs.arrangement.integration.api.ArrangementsApi;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
 import com.backbase.stream.product.service.ArrangementService;
 import com.backbase.stream.webclient.DbsWebClientConfiguration;
@@ -25,18 +26,13 @@ public class ProductConfiguration {
     private final BackbaseStreamConfigurationProperties backbaseStreamConfigurationProperties;
 
     @Bean
-    public ArrangementService arrangementService(com.backbase.dbs.accounts.presentation.service.ApiClient accountsApiClient) {
+    public ArrangementService arrangementService(ApiClient accountsApiClient) {
         return new ArrangementService(new ArrangementsApi(accountsApiClient));
     }
 
     @Bean
-    public com.backbase.dbs.accounts.presentation.service.ApiClient accountsApiClient(
-        WebClient dbsWebClient,
-        ObjectMapper objectMapper,
-        DateFormat dateFormat) {
-        com.backbase.dbs.accounts.presentation.service.ApiClient apiClient =
-            new com.backbase.dbs.accounts.presentation.service.ApiClient(
-                dbsWebClient, objectMapper, dateFormat);
+    public ApiClient accountsApiClient(WebClient dbsWebClient, ObjectMapper objectMapper, DateFormat dateFormat) {
+        ApiClient apiClient = new ApiClient(dbsWebClient, objectMapper, dateFormat);
         apiClient.setBasePath(backbaseStreamConfigurationProperties.getDbs().getArrangementManagerBaseUrl());
         return apiClient;
     }

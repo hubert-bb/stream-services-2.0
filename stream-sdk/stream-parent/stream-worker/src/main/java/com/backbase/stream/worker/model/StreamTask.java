@@ -102,7 +102,7 @@ public abstract class StreamTask {
     }
 
     public void logSummary() {
-        if (log.isDebugEnabled()) {
+        if (log.isInfoEnabled()) {
             log.info("\n\n" +
                     "Stream Task: {}\n" +
                     "Status: {}\n\n" +

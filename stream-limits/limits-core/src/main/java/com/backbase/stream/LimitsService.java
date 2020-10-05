@@ -1,9 +1,9 @@
 package com.backbase.stream;
 
-import com.backbase.dbs.limit.service.api.LimitsApi;
-import com.backbase.dbs.limit.service.model.CreateLimitRequest;
-import com.backbase.dbs.limit.service.model.CreateLimitResponse;
-import com.backbase.dbs.user.presentation.service.api.UsersApi;
+import com.backbase.dbs.limit.integration.api.LimitsApi;
+import com.backbase.dbs.limit.integration.model.IngestedLimit;
+import com.backbase.dbs.limit.integration.model.LimitIngestionReport;
+import com.backbase.dbs.user.integration.api.UsersApi;
 import com.backbase.stream.limit.LimitsSaga;
 import com.backbase.stream.limit.LimitsTask;
 import com.backbase.stream.limit.LimitsUnitOfWorkExecutor;
@@ -19,7 +19,6 @@ public class LimitsService {
 
     private LimitsSaga limitsSaga;
     private LimitsApi limitsApi;
-    private UsersApi usersApi;
     private LimitsUnitOfWorkExecutor limitsUnitOfWorkExecutor;
 
     public LimitsService(
@@ -30,22 +29,13 @@ public class LimitsService {
     ) {
         this.limitsSaga = limitsSaga;
         this.limitsApi = limitsApi;
-        this.usersApi = usersApi;
         this.limitsUnitOfWorkExecutor = limitsUnitOfWorkExecutor;
     }
 
-    public Flux<CreateLimitResponse> createUserLimits(Flux<CreateLimitRequest> items) {
-        Flux<CreateLimitRequest> cleanItems = items.map(item -> {
-            if (isUUID(item.getUserBBID())) {
-                usersApi.getExternalIdByExternalIdgetUserByExternalid(item.getUserBBID()).subscribe(userItem -> {
-                    item.setUserBBID(userItem.getId());
-                });
-            }
-            return item;
-        });
-        Flux<UnitOfWork<LimitsTask>> unitOfWorkFlux = limitsUnitOfWorkExecutor.prepareUnitOfWork(cleanItems);
+    public Flux<LimitIngestionReport> createUserLimits(Flux<IngestedLimit> items) {
+        Flux<UnitOfWork<LimitsTask>> unitOfWorkFlux = limitsUnitOfWorkExecutor.prepareUnitOfWork(items);
         return unitOfWorkFlux.flatMap(limitsUnitOfWorkExecutor::executeUnitOfWork).flatMap(limitsTaskUnitOfWork -> {
-            Stream<CreateLimitResponse> stream = limitsTaskUnitOfWork.getStreamTasks().stream().map(LimitsTask::getResponse);
+            Stream<LimitIngestionReport> stream = limitsTaskUnitOfWork.getStreamTasks().stream().map(LimitsTask::getResponse);
             return Flux.fromStream(stream);
         });
     }

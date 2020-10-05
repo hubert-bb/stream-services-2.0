@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.backbase.stream</groupId>
+        <artifactId>stream-task-starter-parent</artifactId>
+        <version>2.7.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.backbase.stream</groupId>
+    <artifactId>stream-bootstrap-task</artifactId>
+    <version>2.7.0</version>
+
+    <packaging>jar</packaging>
+    <name>Stream :: Bootstrap Task</name>
+
+    <properties>
+        <stream-services.version>2.6.0</stream-services.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- Spring Boot Tasks require a database to be present to write task execution state -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.backbase.stream</groupId>
+            <artifactId>stream-bootstrap-core</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+    </dependencies>
+</project>

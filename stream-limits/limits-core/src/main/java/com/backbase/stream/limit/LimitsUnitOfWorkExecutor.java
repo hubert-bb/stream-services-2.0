@@ -1,6 +1,6 @@
 package com.backbase.stream.limit;
 
-import com.backbase.dbs.limit.service.model.CreateLimitRequest;
+import com.backbase.dbs.limit.integration.model.IngestedLimit;
 import com.backbase.stream.worker.StreamTaskExecutor;
 import com.backbase.stream.worker.UnitOfWorkExecutor;
 import com.backbase.stream.worker.configuration.StreamWorkerConfiguration;
@@ -17,7 +17,7 @@ public class LimitsUnitOfWorkExecutor extends UnitOfWorkExecutor<LimitsTask> {
         super(repository, streamTaskExecutor, streamWorkerConfiguration);
     }
 
-    public Flux<UnitOfWork<LimitsTask>> prepareUnitOfWork(List<CreateLimitRequest> items) {
+    public Flux<UnitOfWork<LimitsTask>> prepareUnitOfWork(List<IngestedLimit> items) {
         String unitOfWorkId = "limits-" + System.currentTimeMillis();
         Flux<UnitOfWork<LimitsTask>> toWorkOn = Flux.empty();
         items.forEach(item -> {
@@ -29,7 +29,7 @@ public class LimitsUnitOfWorkExecutor extends UnitOfWorkExecutor<LimitsTask> {
         return toWorkOn;
     }
 
-    public Flux<UnitOfWork<LimitsTask>> prepareUnitOfWork(Flux<CreateLimitRequest> items) {
+    public Flux<UnitOfWork<LimitsTask>> prepareUnitOfWork(Flux<IngestedLimit> items) {
         return items.buffer(streamWorkerConfiguration.getBufferSize()).flatMap(this::prepareUnitOfWork);
     }
 }

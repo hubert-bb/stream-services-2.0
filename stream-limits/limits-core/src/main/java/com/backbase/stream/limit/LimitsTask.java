@@ -1,7 +1,7 @@
 package com.backbase.stream.limit;
 
-import com.backbase.dbs.limit.service.model.CreateLimitRequest;
-import com.backbase.dbs.limit.service.model.CreateLimitResponse;
+import com.backbase.dbs.limit.integration.model.IngestedLimit;
+import com.backbase.dbs.limit.integration.model.LimitIngestionReport;
 import com.backbase.stream.worker.model.StreamTask;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,13 +10,13 @@ import lombok.EqualsAndHashCode;
 @Data
 public class LimitsTask extends StreamTask {
 
-    public LimitsTask(String unitOfWorkId, CreateLimitRequest data) {
+    public LimitsTask(String unitOfWorkId, IngestedLimit data) {
         super(unitOfWorkId);
         this.data = data;
     }
 
-    private CreateLimitRequest data;
-    private CreateLimitResponse response;
+    private IngestedLimit data;
+    private LimitIngestionReport response;
 
     @Override
     public String getName() {

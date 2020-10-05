@@ -1,8 +1,7 @@
 package com.backbase.stream.configuration;
 
-import com.backbase.dbs.limit.service.ApiClient;
-import com.backbase.dbs.limit.service.api.LimitsApi;
-import com.backbase.dbs.user.presentation.service.api.UsersApi;
+import com.backbase.dbs.limit.integration.ApiClient;
+import com.backbase.dbs.limit.integration.api.LimitsApi;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
 import com.backbase.stream.limit.LimitsSaga;
 import com.backbase.stream.limit.LimitsTask;
@@ -34,22 +33,9 @@ public class LimitsServiceConfiguration {
         ObjectMapper objectMapper,
         DateFormat dateFormat,
         WebClient dbsWebClient,
-        BackbaseStreamConfigurationProperties configurationProperties
-    ) {
+        BackbaseStreamConfigurationProperties configurationProperties) {
         ApiClient apiClient = new ApiClient(dbsWebClient, objectMapper, dateFormat).setBasePath(configurationProperties.getDbs().getLimitsManagerBaseUrl());
         return new LimitsApi(apiClient);
-    }
-
-    @Bean
-    public UsersApi usersApi(
-        ObjectMapper objectMapper,
-        DateFormat dateFormat,
-        WebClient dbsWebClient,
-        BackbaseStreamConfigurationProperties configurationProperties
-    ) {
-        com.backbase.dbs.user.presentation.service.ApiClient apiClient = new com.backbase.dbs.user.presentation.service.ApiClient(dbsWebClient, objectMapper, dateFormat);
-        apiClient.setBasePath(configurationProperties.getDbs().getUserManagerBaseUrl());
-        return new UsersApi(apiClient);
     }
 
     @Bean

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.logging.LoggingHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter;
 import org.springframework.cloud.client.ServiceInstance;
@@ -13,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
@@ -37,12 +42,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
+import reactor.netty.channel.BootstrapHandlers;
+import reactor.netty.http.client.HttpClient;
+
+import static java.nio.charset.Charset.defaultCharset;
 
 
 /**
  * DBS Web Client Configuration to be used by Stream Services that communicate with DBS.
  */
 @Configuration
+@Slf4j
 public class DbsWebClientConfiguration {
 
     /**

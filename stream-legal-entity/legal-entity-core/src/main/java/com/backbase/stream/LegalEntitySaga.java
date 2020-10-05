@@ -18,6 +18,7 @@ import com.backbase.stream.legalentity.model.LegalEntityStatus;
 import com.backbase.stream.legalentity.model.ProductGroup;
 import com.backbase.stream.legalentity.model.ServiceAgreement;
 import com.backbase.stream.legalentity.model.User;
+import com.backbase.stream.limit.LimitsSaga;
 import com.backbase.stream.product.BusinessFunctionGroupMapper;
 import com.backbase.stream.product.ProductIngestionSaga;
 import com.backbase.stream.product.task.BatchProductGroupTask;
@@ -81,17 +82,22 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
     private final AccessGroupService accessGroupService;
     private final ProductIngestionSaga productIngestionSaga;
 
+    private final LimitsSaga limitsSaga;
+
     private final LegalEntitySagaConfigurationProperties legalEntitySagaConfigurationProperties;
 
     public LegalEntitySaga(LegalEntityService legalEntityService,
                            UserService userService,
                            AccessGroupService accessGroupService,
                            ProductIngestionSaga productIngestionSaga,
-                           LegalEntitySagaConfigurationProperties legalEntitySagaConfigurationProperties) {
+                           LimitsSaga limitsSaga,
+                           LegalEntitySagaConfigurationProperties legalEntitySagaConfigurationProperties
+                           ) {
         this.legalEntityService = legalEntityService;
         this.userService = userService;
         this.accessGroupService = accessGroupService;
         this.productIngestionSaga = productIngestionSaga;
+        this.limitsSaga = limitsSaga;
         this.legalEntitySagaConfigurationProperties = legalEntitySagaConfigurationProperties;
     }
 
@@ -291,6 +297,10 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
         }
         return Flux.fromIterable(legalEntity.getUsers())
             .flatMap(jobProfileUser -> {
+                if(jobProfileUser.getReferenceJobRoleNames() != null && jobProfileUser.getReferenceJobRoleNames().isEmpty()) {
+                    log.info("No Job Reference Role Names defined for Job Profile User: {}", jobProfileUser.getUser().getExternalId());
+                }
+
                 ServiceAgreement serviceAgreement = legalEntity.getMasterServiceAgreement();
                 return getBusinessFunctionGroupTemplates(streamTask, jobProfileUser)
                     .flatMap(businessFunctionGroups -> accessGroupService.setupFunctionGroups(streamTask, serviceAgreement, businessFunctionGroups))

@@ -1,7 +1,7 @@
 package com.backbase.stream.productcatalog;
 
-import com.backbase.stream.productcatalog.model.ProductCatalog;
-import com.backbase.stream.productcatalog.model.ProductType;
+import com.backbase.stream.legalentity.model.ProductCatalog;
+import com.backbase.stream.legalentity.model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

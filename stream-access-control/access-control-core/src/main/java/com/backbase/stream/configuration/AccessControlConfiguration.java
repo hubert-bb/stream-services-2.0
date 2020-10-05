@@ -1,8 +1,8 @@
 package com.backbase.stream.configuration;
 
-import com.backbase.dbs.accesscontrol.query.service.api.AccesscontrolApi;
-import com.backbase.dbs.accessgroup.presentation.service.api.AccessgroupsApi;
-import com.backbase.dbs.legalentity.presentation.service.api.LegalentitiesApi;
+import com.backbase.dbs.accesscontrol.integration.ApiClient;
+import com.backbase.dbs.accesscontrol.integration.api.AccessgroupsApi;
+import com.backbase.dbs.legalentity.integration.api.LegalentitiesApi;
 import com.backbase.dbs.user.presentation.service.api.UsersApi;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
 import com.backbase.stream.product.configuration.ProductConfiguration;
@@ -79,36 +79,20 @@ public class AccessControlConfiguration {
 
 
     @Bean
-    protected com.backbase.dbs.accesscontrol.query.service.ApiClient accessControlQueryApiClient(
-        WebClient dbsWebClient,
-        ObjectMapper objectMapper,
-        DateFormat dateFormat) {
-        com.backbase.dbs.accesscontrol.query.service.ApiClient apiClient =
-            new com.backbase.dbs.accesscontrol.query.service.ApiClient(
+    protected ApiClient accessGroupApiClient(        WebClient dbsWebClient,        ObjectMapper objectMapper,        DateFormat dateFormat) {
+        ApiClient apiClient = new ApiClient(
                 dbsWebClient, objectMapper, dateFormat);
         apiClient.setBasePath(backbaseStreamConfigurationProperties.getDbs().getAccessControlBaseUrl());
         return apiClient;
     }
 
     @Bean
-    protected com.backbase.dbs.accessgroup.presentation.service.ApiClient accessGroupApiClient(
+    public com.backbase.dbs.legalentity.integration.ApiClient legalEntityClientApi(
         WebClient dbsWebClient,
         ObjectMapper objectMapper,
         DateFormat dateFormat) {
-        com.backbase.dbs.accessgroup.presentation.service.ApiClient apiClient =
-            new com.backbase.dbs.accessgroup.presentation.service.ApiClient(
-                dbsWebClient, objectMapper, dateFormat);
-        apiClient.setBasePath(backbaseStreamConfigurationProperties.getDbs().getAccessControlBaseUrl());
-        return apiClient;
-    }
-
-    @Bean
-    public com.backbase.dbs.legalentity.presentation.service.ApiClient legalEntityClientApi(
-        WebClient dbsWebClient,
-        ObjectMapper objectMapper,
-        DateFormat dateFormat) {
-        com.backbase.dbs.legalentity.presentation.service.ApiClient apiClient =
-            new com.backbase.dbs.legalentity.presentation.service.ApiClient(
+        com.backbase.dbs.legalentity.integration.ApiClient apiClient =
+            new com.backbase.dbs.legalentity.integration.ApiClient(
                 dbsWebClient, objectMapper, dateFormat);
         apiClient.setBasePath(backbaseStreamConfigurationProperties.getDbs().getAccessControlBaseUrl());
         return apiClient;

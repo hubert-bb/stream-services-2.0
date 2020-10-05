@@ -1,27 +1,32 @@
 package com.backbase.stream.productcatalog.mapper;
 
 import com.backbase.dbs.accounts.presentation.service.model.*;
-import com.backbase.stream.productcatalog.model.ProductKind;
-import com.backbase.stream.productcatalog.model.ProductType;
+import com.backbase.dbs.arrangement.integration.model.IntegrationProductKindItem;
+import com.backbase.dbs.arrangement.integration.model.NewProductKindItem;
+import com.backbase.dbs.arrangement.integration.model.NewProductKindItemPut;
+import com.backbase.dbs.arrangement.integration.model.ProductItem;
+import com.backbase.dbs.arrangement.integration.model.ProductItemResponseBody;
+import com.backbase.stream.legalentity.model.ProductKind;
+import com.backbase.stream.legalentity.model.ProductType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper
 public interface ProductCatalogMapper {
 
-    ProductItem toPresentation(ProductType productType);
+    ProductItem toIntegration(ProductType source);
 
-    ProductKindItem toPresentation(ProductKind productKind);
+    ProductItem toPresentation(ProductType source);
 
-    ProductKindItemPut toPutPresentation(ProductKindItem productKindItem);
+    ProductType toStream(ProductItemResponseBody source);
 
-    ProductKindItem toStream(ProductKindItemPut productKindItem);
+    ProductKind toStream(NewProductKindItem source);
 
-    ProductKind toStream(PresentationProductKindItemGet presentationProductKindItemGet);
+    ProductKind toStream(NewProductKindItemPut source);
 
-    ProductKind toStream(ProductKindItem productKindItem);
+    ProductKind toStream(IntegrationProductKindItem source);
 
-    ProductType toStream(SchemasProductItem schemasProductItem);
+    NewProductKindItemPut toIntegrationPut(ProductKind source);
 
-
+    NewProductKindItem toIntegration(ProductKind source);
 }

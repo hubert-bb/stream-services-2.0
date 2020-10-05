@@ -1,18 +1,18 @@
 package com.backbase.stream.productcatalog;
 
-import com.backbase.dbs.accounts.presentation.service.ApiClient;
-import com.backbase.dbs.accounts.presentation.service.api.ProductKindsApi;
-import com.backbase.dbs.accounts.presentation.service.api.ProductsApi;
-import com.backbase.dbs.accounts.presentation.service.model.ProductId;
-import com.backbase.dbs.accounts.presentation.service.model.ProductKindId;
-import com.backbase.dbs.accounts.presentation.service.model.ProductKindItem;
-import com.backbase.dbs.accounts.presentation.service.model.ProductKindItemPut;
-import com.backbase.dbs.accounts.presentation.service.model.SchemasProductItem;
+
+import com.backbase.dbs.arrangement.integration.ApiClient;
+import com.backbase.dbs.arrangement.integration.api.ProductKindsApi;
+import com.backbase.dbs.arrangement.integration.api.ProductsApi;
+import com.backbase.dbs.arrangement.integration.model.Id;
+import com.backbase.dbs.arrangement.integration.model.NewProductKindItem;
+import com.backbase.dbs.arrangement.integration.model.NewProductKindItemPut;
+import com.backbase.dbs.arrangement.integration.model.ProductItemResponseBody;
+import com.backbase.dbs.arrangement.integration.model.ProductKindId;
+import com.backbase.stream.legalentity.model.ProductCatalog;
+import com.backbase.stream.legalentity.model.ProductKind;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.backbase.stream.productcatalog.mapper.ProductCatalogMapper;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
-import com.backbase.stream.productcatalog.model.ProductKind;
-import com.backbase.stream.productcatalog.model.ProductType;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -46,20 +46,16 @@ public class ReactiveProductCatalogService {
     public Mono<ProductCatalog> getProductCatalog() {
         Flux<ProductKind> productKindsFlux = getProductKindFlux();
 
-        Flux<SchemasProductItem> products = productsApi.getProducts(null, null);
+        Flux<ProductItemResponseBody> products = productsApi.getProducts(null, null);
         Flux<ProductType> productTypesFlux = products.map(productCatalogMapper::toStream);
 
         return Mono.zip(productKindsFlux.collectList(), productTypesFlux.collectList())
             .map(tuple -> new ProductCatalog().productTypes(tuple.getT2()).productKinds(tuple.getT1()))
-            .doOnNext(productCatalog ->  log.info("Created Product Catalog"));
+            .doOnNext(productCatalog -> log.info("Created Product Catalog"));
     }
 
     private Flux<ProductKind> getProductKindFlux() {
         return productKindsApi.getProductkinds(null, null, null)
-            .flux()
-            .flatMap(productKindsWrapper -> Flux.fromIterable(productKindsWrapper.getProductKinds() != null
-                ? productKindsWrapper.getProductKinds()
-                : new ArrayList<>()))
             .map(productCatalogMapper::toStream);
     }
 
@@ -84,7 +80,7 @@ public class ReactiveProductCatalogService {
                 .collect(Collectors.toList());
 
             Flux<ProductKind> productKindFlux = storeProductKinds(newProductKinds)
-                    .mergeWith(getProductKindFlux());
+                .mergeWith(getProductKindFlux());
 
             // Ensure products kinds are created first
             return productKindFlux.collectList().flatMap(productKinds -> {
@@ -97,7 +93,6 @@ public class ReactiveProductCatalogService {
     }
 
 
-
     /**
      * Setup Product Catalog from Aggregate.
      *
@@ -108,47 +103,43 @@ public class ReactiveProductCatalogService {
         return getProductCatalog().flatMap(existingProductCatalog -> {
 
             List<ProductKind> existingProductKinds = productCatalog.getProductKinds().stream()
-                    .filter(existingProductKind -> existingProductCatalog.getProductKinds().stream()
-                            .anyMatch(productKind ->
-                                    productKind.getExternalKindId().equals(existingProductKind.getExternalKindId())))
-                    .collect(Collectors.toList());
+                .filter(existingProductKind -> existingProductCatalog.getProductKinds().stream()
+                    .anyMatch(productKind ->
+                        productKind.getExternalKindId().equals(existingProductKind.getExternalKindId())))
+                .collect(Collectors.toList());
             List<ProductType> existingProductTypes = productCatalog.getProductTypes().stream()
-                    .filter(existingProductType -> existingProductCatalog.getProductTypes().stream()
-                            .anyMatch(productType ->
-                                    productType.getExternalProductId().equals(existingProductType.getExternalProductId())))
-                    .collect(Collectors.toList());
+                .filter(existingProductType -> existingProductCatalog.getProductTypes().stream()
+                    .anyMatch(productType ->
+                        productType.getExternalProductId().equals(existingProductType.getExternalProductId())))
+                .collect(Collectors.toList());
 
-            Flux<ProductKind> existingProductKindFlux = updateProductKind(existingProductKinds).map(productCatalogMapper::toStream)
-                    .map(productCatalogMapper::toStream).mergeWith(getProductKindFlux());
+            Flux<ProductKind> existingProductKindFlux = updateProductKind(existingProductKinds)
+                .map(productCatalogMapper::toStream)
+                .mergeWith(getProductKindFlux());
 
             return existingProductKindFlux.collectList().flatMap(
-                    productKinds -> {
-                        return updateProductTypes(existingProductTypes, productKinds).collectList().flatMap(productTypes -> {
-                            return Mono.just(productCatalog);
-                        });
-                    }
+                productKinds -> updateProductTypes(existingProductTypes, productKinds).collectList().flatMap(productTypes -> Mono.just(productCatalog))
             );
         });
     }
 
 
-    private Flux<ProductKindItemPut> updateProductKind(List<ProductKind> productKinds) {
+    private Flux<NewProductKindItemPut> updateProductKind(List<ProductKind> productKinds) {
         log.info("Updating Product Type1: {}", productKinds);
         return Flux.fromIterable(productKinds)
-                .map(productCatalogMapper::toPresentation)
-                .map(productCatalogMapper::toPutPresentation)
-                .flatMap(this::updateProductKind);
+            .map(productCatalogMapper::toIntegrationPut)
+            .flatMap(this::updateProductKind);
     }
 
-    private Mono<ProductKindItemPut> updateProductKind(ProductKindItemPut productKind) {
+    private Mono<NewProductKindItemPut> updateProductKind(NewProductKindItemPut productKind) {
         log.info("Updating Product Type2: {}", productKind.getKindName());
         return productKindsApi.putProductkinds(productKind)
-                .doOnError(WebClientResponseException.BadRequest.class, e ->
-                        log.error("Bad Request Storing Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
-                )
-                .doOnError(WebClientResponseException.class, e ->
-                        log.error("Bad Request Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
-                ).map(actual -> productKind);
+            .doOnError(WebClientResponseException.BadRequest.class, e ->
+                log.error("Bad Request Storing Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
+            )
+            .doOnError(WebClientResponseException.class, e ->
+                log.error("Bad Request Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
+            ).map(actual -> productKind);
     }
 
     private Flux<ProductType> createProductTypes(List<ProductType> productTypes, List<ProductKind> productKinds) {
@@ -158,34 +149,25 @@ public class ReactiveProductCatalogService {
 
     private Flux<ProductType> updateProductTypes(List<ProductType> productTypes, List<ProductKind> productKinds) {
         return Flux.fromIterable(productTypes)
-                .flatMap(productType -> updateProductType(productType, productKinds));
+            .flatMap(productType -> updateProductType(productType, productKinds));
     }
 
     public Mono<ProductType> updateProductType(ProductType productType, List<ProductKind> productKinds) {
         Mono<Void> productIdMono = Mono.just(productType)
-                .map(productCatalogMapper::toPresentation)
-                .map(productItem -> {
-                    log.info("Updating Product Type: {}", productItem.getProductTypeName());
-                    ProductKind productKind;
-                    if (productItem.getProductKind() != null) {
-                        productKind = productType.getProductKind();
-                    } else {
-                        productKind = productKinds.stream()
-                                .filter(kind -> productType.getExternalProductKindId().equals(kind.getExternalKindId()))
-                                .findFirst()
-                                .orElseThrow(NullPointerException::new);
-                    }
-                    productItem.setExternalProductKindId(productKind.getExternalKindId());
-                    productItem.setProductKindName(productKind.getKindName());
-                    productItem.setProductTypeName(productType.getTypeName());
-                    productItem.setExternalTypeId(productType.getExternalTypeId());
-                    return productItem;
-                })
-                .flatMap(
-                        productItem ->
-                                productsApi.putProducts(productItem)
-                                        .doOnError(WebClientResponseException.BadRequest.class, e -> log.error("Bad Request Storing Product Type: {} \n[{}]: {}\nResponse: {}", productItem, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString()))
-                                        .doOnError(WebClientResponseException.class, e -> log.error("Bad Request Storing Product Type: {} \n[{}]: {}\nResponse: {}", productItem, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())));
+            .map(productCatalogMapper::toPresentation)
+            .map(productItem -> {
+                log.info("Updating Product Type: {}", productItem.getProductTypeName());
+                ProductKind productKind = getProductKind(productType, productKinds);
+                productItem.setId(productKind.getExternalKindId());
+                productItem.setProductKindName(productKind.getKindName());
+                productItem.setProductTypeName(productType.getTypeName());
+                return productItem;
+            })
+            .flatMap(
+                productItem ->
+                    productsApi.putProducts(productItem)
+                        .doOnError(WebClientResponseException.BadRequest.class, e -> log.error("Bad Request Storing Product Type: {} \n[{}]: {}\nResponse: {}", productItem, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString()))
+                        .doOnError(WebClientResponseException.class, e -> log.error("Bad Request Storing Product Type: {} \n[{}]: {}\nResponse: {}", productItem, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())));
 
         return Mono.zip(Mono.just(productType), productIdMono, this::handelUpdateProductTypeResult);
     }
@@ -193,23 +175,14 @@ public class ReactiveProductCatalogService {
 
     public Mono<ProductType> createProductType(ProductType productType, List<ProductKind> productKinds) {
 
-        Mono<ProductId> productIdMono = Mono.just(productType)
-            .map(productCatalogMapper::toPresentation)
+        Mono<Id> productIdMono = Mono.just(productType)
+            .map(productCatalogMapper::toIntegration)
             .map(productItem -> {
                 log.info("Creating Product Type: {}", productItem.getProductTypeName());
-                ProductKind productKind;
-                if (productItem.getProductKind() != null) {
-                    productKind = productType.getProductKind();
-                } else {
-                    productKind = productKinds.stream()
-                        .filter(kind -> productType.getExternalProductKindId().equals(kind.getExternalKindId()))
-                        .findFirst()
-                        .orElseThrow(NullPointerException::new);
-                }
-                productItem.setExternalProductKindId(productKind.getExternalKindId());
+                ProductKind productKind = getProductKind(productType, productKinds);
+                productItem.setId(productKind.getExternalKindId());
                 productItem.setProductKindName(productKind.getKindName());
                 productItem.setProductTypeName(productType.getTypeName());
-                productItem.setExternalTypeId(productType.getExternalTypeId());
                 return productItem;
             })
             .flatMap(
@@ -221,8 +194,15 @@ public class ReactiveProductCatalogService {
         return Mono.zip(Mono.just(productType), productIdMono, this::handelStoreProductTypeResult);
     }
 
+    private ProductKind getProductKind(ProductType productType, List<ProductKind> productKinds) {
+        return productKinds.stream()
+            .filter(kind -> productType.getExternalProductKindId().equals(kind.getExternalKindId()))
+            .findFirst()
+            .orElseThrow(() -> new NullPointerException("Cannot cretae Product Type with out a valid Product Kind"));
+    }
 
-    private ProductType handelStoreProductTypeResult(ProductType productType, ProductId productId) {
+
+    private ProductType handelStoreProductTypeResult(ProductType productType, Id productId) {
         log.info("Product Type: {} created with: {}", productType.getProductTypeName(), productId.getId());
         return productType;
     }
@@ -231,14 +211,15 @@ public class ReactiveProductCatalogService {
         log.info("Product Type: {} updated.", productType.getProductTypeName());
         return productType;
     }
+
     private Flux<ProductKind> storeProductKinds(List<ProductKind> productKinds) {
         return Flux.fromIterable(productKinds)
-            .map(productCatalogMapper::toPresentation)
+            .map(productCatalogMapper::toIntegration)
             .flatMap(this::storeProductKind);
     }
 
 
-    private Mono<ProductKind> storeProductKind(ProductKindItem productKind) {
+    private Mono<ProductKind> storeProductKind(NewProductKindItem productKind) {
         Mono<ProductKindId> productKindIdMono = productKindsApi.postProductkinds(productKind)
             .doOnError(WebClientResponseException.BadRequest.class, e ->
                 log.error("Bad Request Storing Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
@@ -246,11 +227,11 @@ public class ReactiveProductCatalogService {
             .doOnError(WebClientResponseException.class, e ->
                 log.error("Bad Request Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
             );
-        return Mono.zip(Mono.just(productKind), productKindIdMono,
-            this::handleStoreResult).map(productCatalogMapper::toStream);
+        return Mono.zip(Mono.just(productKind), productKindIdMono, this::handleStoreResult)
+            .map(productCatalogMapper::toStream);
     }
 
-    private ProductKindItem handleStoreResult(ProductKindItem productKindItem, ProductKindId productKindId) {
+    private NewProductKindItem handleStoreResult(NewProductKindItem productKindItem, ProductKindId productKindId) {
         log.info("Product Kind: {} created with: {}", productKindItem.getKindName(), productKindId);
         return productKindItem;
     }
@@ -259,7 +240,7 @@ public class ReactiveProductCatalogService {
     public Mono<ProductType> getProductTypeByExternalId(String productTypeExternalId) {
         log.info("Get Product Type: {}", productTypeExternalId);
         return productsApi.getProducts(Collections.singletonList(productTypeExternalId), null)
-            .doOnNext(productItem -> log.info("Found product: {} for id: {}", productItem.getTypeName(), productTypeExternalId))
+            .doOnNext(productItem -> log.info("Found product: {} for id: {}", productItem.getProductTypeName(), productTypeExternalId))
             .doOnError(WebClientResponseException.class, ex -> {
                 log.error("Failed to get product type by external id: {}. Response: {}", productTypeExternalId, ex.getResponseBodyAsString());
             })
