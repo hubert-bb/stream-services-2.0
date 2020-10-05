@@ -8,11 +8,11 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-bootstrap</artifactId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <artifactId>stream-bootstrap-core</artifactId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Services :: Bootstrap</name>
@@ -21,13 +21,13 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>legal-entity-core</artifactId>
-            <version>2.6.0</version>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>product-catalog-core</artifactId>
-            <version>2.6.0</version>
+            <version>3.0.0</version>
         </dependency>
 
 
