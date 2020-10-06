@@ -17,13 +17,8 @@ class ProductMapperConstants {
     static final String W = "W";
     static final String M = "M";
     static final String Y = "Y";
-    static final String EXTERNAL_LEGAL_ENTITY_IDS = "externalLegalEntityIds";
-    static final String EXTERNAL_ID = "externalId";
-    static final String PRODUCT_TYPE_EXTERNAL_ID = "productTypeExternalId";
     static final String LEGAL_ENTITIES = "legalEntities";
     static final String LEGAL_ENTITY_IDS = "legalEntityIds";
     static final String ID = "id";
-    static final String EXTERNAL_STATE_ID = "externalStateId";
-    static final String INTERNAL_ID = "internalId";
 
 }

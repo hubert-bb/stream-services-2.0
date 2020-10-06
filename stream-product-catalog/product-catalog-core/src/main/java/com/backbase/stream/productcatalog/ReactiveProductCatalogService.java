@@ -55,7 +55,7 @@ public class ReactiveProductCatalogService {
     }
 
     private Flux<ProductKind> getProductKindFlux() {
-        return productKindsApi.getProductkinds(null, null, null)
+        return productKindsApi.getProductKinds(null, null, null)
             .map(productCatalogMapper::toStream);
     }
 
@@ -76,7 +76,7 @@ public class ReactiveProductCatalogService {
             List<ProductType> newProductTypes = productCatalog.getProductTypes().stream()
                 .filter(newProductType -> existingProductCatalog.getProductTypes().stream()
                     .noneMatch(productType ->
-                        productType.getExternalProductId().equals(newProductType.getExternalProductId())))
+                        productType.getId().equals(newProductType.getId())))
                 .collect(Collectors.toList());
 
             Flux<ProductKind> productKindFlux = storeProductKinds(newProductKinds)
@@ -110,7 +110,7 @@ public class ReactiveProductCatalogService {
             List<ProductType> existingProductTypes = productCatalog.getProductTypes().stream()
                 .filter(existingProductType -> existingProductCatalog.getProductTypes().stream()
                     .anyMatch(productType ->
-                        productType.getExternalProductId().equals(existingProductType.getExternalProductId())))
+                        productType.getId().equals(existingProductType.getId())))
                 .collect(Collectors.toList());
 
             Flux<ProductKind> existingProductKindFlux = updateProductKind(existingProductKinds)
@@ -133,7 +133,7 @@ public class ReactiveProductCatalogService {
 
     private Mono<NewProductKindItemPut> updateProductKind(NewProductKindItemPut productKind) {
         log.info("Updating Product Type2: {}", productKind.getKindName());
-        return productKindsApi.putProductkinds(productKind)
+        return productKindsApi.putProductKinds(productKind)
             .doOnError(WebClientResponseException.BadRequest.class, e ->
                 log.error("Bad Request Storing Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
             )
@@ -196,7 +196,7 @@ public class ReactiveProductCatalogService {
 
     private ProductKind getProductKind(ProductType productType, List<ProductKind> productKinds) {
         return productKinds.stream()
-            .filter(kind -> productType.getExternalProductKindId().equals(kind.getExternalKindId()))
+            .filter(kind -> productType.getId().equals(kind.getExternalKindId()))
             .findFirst()
             .orElseThrow(() -> new NullPointerException("Cannot cretae Product Type with out a valid Product Kind"));
     }
@@ -220,7 +220,7 @@ public class ReactiveProductCatalogService {
 
 
     private Mono<ProductKind> storeProductKind(NewProductKindItem productKind) {
-        Mono<ProductKindId> productKindIdMono = productKindsApi.postProductkinds(productKind)
+        Mono<ProductKindId> productKindIdMono = productKindsApi.postProductKinds(productKind)
             .doOnError(WebClientResponseException.BadRequest.class, e ->
                 log.error("Bad Request Storing Product Kind: {} \n[{}]: {}\nResponse: {}", productKind, Objects.requireNonNull(e.getRequest()).getMethod(), e.getRequest().getURI(), e.getResponseBodyAsString())
             )

@@ -2,16 +2,15 @@ package com.backbase.stream.legalentity.generator;
 
 import com.backbase.stream.legalentity.generator.configuration.LegalEntityGeneratorConfigurationProperties;
 import com.backbase.stream.legalentity.generator.utils.DefaultGeneratorProductKindOptions;
+import com.backbase.stream.legalentity.model.BackbaseProductKind;
 import com.backbase.stream.legalentity.model.LegalEntity;
 import com.backbase.stream.legalentity.model.LegalEntityResponse;
+import com.backbase.stream.legalentity.model.ProductCatalog;
+import com.backbase.stream.legalentity.model.ProductKind;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.backbase.stream.product.generator.ProductGenerator;
 import com.backbase.stream.product.generator.configuration.ProductGeneratorConfigurationProperties;
-import com.backbase.stream.product.generator.configuration.ProductKindGeneratorProperties;
 import com.backbase.stream.productcatalog.ProductCatalogService;
-import com.backbase.stream.productcatalog.model.BackbaseProductKind;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
-import com.backbase.stream.productcatalog.model.ProductKind;
-import com.backbase.stream.productcatalog.model.ProductType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,12 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +31,11 @@ import org.apache.commons.lang3.RandomUtils;
 import org.iban4j.CountryCode;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @Ignore
@@ -213,8 +209,8 @@ public class LegalEntityGeneratorTests {
 
     private ProductType createProductType(String id, String name, ProductKind productKind) {
         return new ProductType()
-            .externalProductId(id)
-            .externalProductKindId(productKind.getExternalKindId())
+            .id(id)
+            .externalId(productKind.getExternalKindId())
 //                .productKind(productKind)
             .externalProductTypeId(productKind.getKindName())
             .productTypeName(name);

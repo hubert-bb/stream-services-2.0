@@ -27,7 +27,7 @@ public class StreamUtils {
      * @return List of Internal Ids
      */
     public static List<String> getExternalProductIds(ProductGroup productGroup) {
-        return getAllProducts(productGroup).stream().map(BaseProduct::getExternalId).collect(Collectors.toList());
+        return getAllProducts(productGroup).stream().map(BaseProduct::getId).collect(Collectors.toList());
     }
 
     /**
@@ -37,7 +37,7 @@ public class StreamUtils {
      * @return List of Internal Ids
      */
     public static List<String> getInternalProductIds(BaseProductGroup productGroup) {
-        return getAllProducts(productGroup).stream().map(BaseProduct::getInternalId).collect(Collectors.toList());
+        return getAllProducts(productGroup).stream().map(BaseProduct::getId).collect(Collectors.toList());
     }
 
     public static List<BaseProduct> getAllProducts(BaseProductGroup productGroup) {

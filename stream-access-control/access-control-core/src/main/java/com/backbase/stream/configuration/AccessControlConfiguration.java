@@ -3,7 +3,7 @@ package com.backbase.stream.configuration;
 import com.backbase.dbs.accesscontrol.integration.ApiClient;
 import com.backbase.dbs.accesscontrol.integration.api.AccessgroupsApi;
 import com.backbase.dbs.legalentity.integration.api.LegalentitiesApi;
-import com.backbase.dbs.user.presentation.service.api.UsersApi;
+import com.backbase.dbs.user.integration.api.UsersApi;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
 import com.backbase.stream.product.configuration.ProductConfiguration;
 import com.backbase.stream.product.service.ArrangementService;

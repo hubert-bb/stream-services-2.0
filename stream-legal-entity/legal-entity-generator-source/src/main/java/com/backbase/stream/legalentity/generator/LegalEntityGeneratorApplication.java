@@ -2,9 +2,9 @@ package com.backbase.stream.legalentity.generator;
 
 import com.backbase.stream.legalentity.generator.configuration.LegalEntityGeneratorSourceConfigurationProperties;
 import com.backbase.stream.legalentity.model.LegalEntity;
+import com.backbase.stream.legalentity.model.ProductCatalog;
 import com.backbase.stream.productcatalog.ReactiveProductCatalogService;
 import com.backbase.stream.productcatalog.configuration.ProductCatalogServiceConfiguration;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
 import java.time.Duration;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

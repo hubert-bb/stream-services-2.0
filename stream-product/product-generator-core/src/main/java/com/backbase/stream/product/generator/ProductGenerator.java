@@ -1,18 +1,19 @@
 package com.backbase.stream.product.generator;
 
 
+import com.backbase.stream.legalentity.model.BackbaseProductKind;
 import com.backbase.stream.legalentity.model.LegalEntity;
 import com.backbase.stream.legalentity.model.Product;
+import com.backbase.stream.legalentity.model.ProductCatalog;
 import com.backbase.stream.legalentity.model.ProductGroup;
 import static com.backbase.stream.product.generator.AbstractProductGenerator.getRandomFromList;
+
+import com.backbase.stream.legalentity.model.ProductKind;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.backbase.stream.product.generator.configuration.ProductGeneratorConfigurationProperties;
 import com.backbase.stream.product.generator.configuration.ProductKindGeneratorProperties;
 import com.backbase.stream.product.generator.utils.DistributedRandomNumberGenerator;
 import com.backbase.stream.product.mapping.ProductMapper;
-import com.backbase.stream.productcatalog.model.BackbaseProductKind;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
-import com.backbase.stream.productcatalog.model.ProductKind;
-import com.backbase.stream.productcatalog.model.ProductType;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class ProductGenerator {
         Map<ProductKind, List<ProductType>> groupedProductTypesPerKind = productCatalog.getProductTypes()
             .stream()
             .collect(Collectors.groupingBy(productType -> productCatalog.getProductKinds().stream()
-                .filter(kind -> kind.getExternalKindId().equals(productType.getExternalProductKindId()))
+                .filter(kind -> kind.getExternalKindId().equals(productType.getProductKindId()))
                 .findFirst()
                 .orElseThrow(NullPointerException::new)));
 

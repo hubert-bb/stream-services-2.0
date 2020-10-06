@@ -152,8 +152,8 @@ components:
       type: object
       description: "Product groups assigned to the users within same legal entity"
       properties:
-        internalId:
-          $ref: '#/components/schemas/InternalIdentifier'
+        id:
+          $ref: '#/components/schemas/ExternalIdentifier'
         productGroupType:
           type: string
           default: ARRANGEMENTS
@@ -765,7 +765,7 @@ components:
         parentExternalId:
           $ref: '#/components/schemas/ExternalIdentifier'
         parentInternalId:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         subsidiaries:
           type: array
           items:
@@ -844,7 +844,7 @@ components:
         id:
           $ref: '#/components/schemas/ExternalIdentifier'
         legalEntityId:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         emailAddress:
           $ref: '#/components/schemas/EmailAddress'
         mobileNumber:
@@ -1382,11 +1382,11 @@ components:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         legalEntityId:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         serviceAgreementId:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         name:
           maxLength: 128
           minLength: 1
@@ -1485,11 +1485,7 @@ components:
     AssignedPermission:
       type: object
       properties:
-        permittedObjectInternalIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/InternalIdentifier'
-        permittedObjectExternalIds:
+        permittedObjectIds:
           type: array
           items:
             $ref: '#/components/schemas/ExternalIdentifier'
@@ -1637,7 +1633,7 @@ components:
       title: "Reference job role"
       properties:
         id:
-          $ref: '#/components/schemas/InternalIdentifier'
+          $ref: '#/components/schemas/ExternalIdentifier'
         name:
           maxLength: 128
           minLength: 1

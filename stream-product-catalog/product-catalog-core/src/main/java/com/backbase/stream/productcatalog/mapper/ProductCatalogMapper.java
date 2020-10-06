@@ -1,6 +1,5 @@
 package com.backbase.stream.productcatalog.mapper;
 
-import com.backbase.dbs.accounts.presentation.service.model.*;
 import com.backbase.dbs.arrangement.integration.model.IntegrationProductKindItem;
 import com.backbase.dbs.arrangement.integration.model.NewProductKindItem;
 import com.backbase.dbs.arrangement.integration.model.NewProductKindItemPut;

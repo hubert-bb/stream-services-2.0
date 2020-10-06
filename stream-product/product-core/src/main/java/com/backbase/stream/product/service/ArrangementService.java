@@ -63,7 +63,7 @@ public class ArrangementService {
      * @return flux of response items.
      */
     public Flux<BatchResponseItemExtended> upsertBatchArrangements(List<PostArrangement> arrangementItems) {
-        return arrangementsApi.postBatch(arrangementItems)
+        return arrangementsApi.postBatchUpsertArrangements(arrangementItems)
             .map(r -> {
                 log.info("Batch Arrangement update result for arrangementId: {}, resourceId: {}, action: {}, result: {}", r.getArrangementId(), r.getResourceId(), r.getAction(), r.getStatus());
                 // Check if any failed, then fail everything.
@@ -97,7 +97,7 @@ public class ArrangementService {
      */
     public Mono<String> deleteArrangementByExternalId(String arrangementExternalId) {
         log.debug("Removing Arrangement with external id {}", arrangementExternalId);
-        return arrangementsApi.deleteIdById(arrangementExternalId)
+        return arrangementsApi.deleteid(arrangementExternalId)
             .thenReturn(arrangementExternalId);
     }
 
@@ -110,7 +110,7 @@ public class ArrangementService {
      */
     public Mono<Void> addLegalEntitiesForArrangement(String arrangementExternalId, List<String> legalEntitiesExternalIds) {
         log.debug("Attaching Arrangement {} to Legal Entities: {}", arrangementExternalId, legalEntitiesExternalIds);
-        return arrangementsApi.postLegalentitiesById(arrangementExternalId, new ExternalLegalEntityIds().ids(legalEntitiesExternalIds));
+        return arrangementsApi.postArrangementLegalEntities(arrangementExternalId, new ExternalLegalEntityIds().ids(legalEntitiesExternalIds));
     }
 
     /**

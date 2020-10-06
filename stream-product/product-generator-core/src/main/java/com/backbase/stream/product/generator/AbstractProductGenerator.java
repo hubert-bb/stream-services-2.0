@@ -2,16 +2,15 @@ package com.backbase.stream.product.generator;
 
 import com.backbase.stream.legalentity.model.AvailableBalance;
 import com.backbase.stream.legalentity.model.BaseProduct;
-import com.backbase.stream.legalentity.model.BaseProductState;
 import com.backbase.stream.legalentity.model.BookedBalance;
 import com.backbase.stream.legalentity.model.CreditLimit;
 import com.backbase.stream.legalentity.model.CurrentAccount;
 import com.backbase.stream.legalentity.model.DebitCardItem;
 import com.backbase.stream.legalentity.model.LegalEntity;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.backbase.stream.product.generator.configuration.ProductKindGeneratorProperties;
 import com.backbase.stream.product.generator.utils.DistributedRandomNumberGenerator;
 import com.backbase.stream.product.generator.utils.RandomCreditCardNumberGenerator;
-import com.backbase.stream.productcatalog.model.ProductType;
 import com.github.javafaker.Faker;
 import com.mifmif.common.regex.Generex;
 import java.math.BigDecimal;
@@ -40,8 +39,8 @@ public abstract class AbstractProductGenerator<T extends BaseProduct> {
 
     protected T generate(T product, ProductType productType) {
 
-        product.setExternalId(randomIdGenerator.random());
-        product.setProductTypeExternalId(getExternalProductType(productType));
+        product.setId(randomIdGenerator.random());
+        product.setProductTypeId(getExternalProductType(productType));
         product.setCurrency(generatorProperties.getCurrency());
         product.setName(productType.getProductTypeName());
         product.setExternalTransferAllowed(true);
@@ -63,7 +62,7 @@ public abstract class AbstractProductGenerator<T extends BaseProduct> {
     }
 
     private String getExternalProductType(ProductType productType) {
-        String externalProductId = productType.getExternalProductId();
+        String externalProductId = productType.getExternalId();
         if (RandomUtils.nextDouble(0d, 1d) <= generatorProperties.getErrorRateUnknownProductId()) {
             externalProductId = ("RandomProductTypeExteranalId_" + System.currentTimeMillis());
         }

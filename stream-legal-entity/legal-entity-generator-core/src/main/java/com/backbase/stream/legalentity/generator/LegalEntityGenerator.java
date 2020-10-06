@@ -4,10 +4,10 @@ import com.backbase.stream.legalentity.generator.configuration.LegalEntityGenera
 import com.backbase.stream.legalentity.model.JobProfileUser;
 import com.backbase.stream.legalentity.model.LegalEntity;
 import com.backbase.stream.legalentity.model.LegalEntityType;
+import com.backbase.stream.legalentity.model.ProductCatalog;
 import com.backbase.stream.legalentity.model.ProductGroup;
 import com.backbase.stream.legalentity.model.User;
 import com.backbase.stream.product.generator.ProductGenerator;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
 import com.github.javafaker.Faker;
 import java.text.Normalizer;
 import java.util.List;
@@ -43,7 +43,7 @@ public class LegalEntityGenerator {
             // Introduce random error;
             legalEntity.setUsers(null);
             legalEntity.setAdministrators(null);
-            legalEntity.setExternalId(null);
+            legalEntity.id(null);
             legalEntity.setName(null);
         }
 
@@ -51,14 +51,14 @@ public class LegalEntityGenerator {
     }
 
     private LegalEntity createLegalEntityFor(String username, String fullName) {
-        User user = new User().externalId(username).fullName(fullName);
+        User user = new User().id(username).fullName(fullName);
 
         JobProfileUser jobProfileUser = new JobProfileUser()
             .user(user);
 
         LegalEntity legalEntity = new LegalEntity()
             .name(fullName)
-            .externalId(username)
+            .id(username)
             .parentExternalId(options.getParentLegalEntityId())
             .legalEntityType(LegalEntityType.CUSTOMER)
             .addAdministratorsItem(user);

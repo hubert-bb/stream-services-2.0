@@ -2,8 +2,8 @@ package com.backbase.stream.product.generator;
 
 import com.backbase.stream.legalentity.model.CurrentAccount;
 import com.backbase.stream.legalentity.model.LegalEntity;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.backbase.stream.product.generator.configuration.ProductKindGeneratorProperties;
-import com.backbase.stream.productcatalog.model.ProductType;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.apache.commons.lang3.RandomUtils;
