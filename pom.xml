@@ -30,7 +30,6 @@
         <module>stream-transactions</module>
         <module>stream-cursor</module>
 
-        <module>stream-audit</module>
         <module>stream-product-catalog</module>
         <module>stream-config-server</module>
 
@@ -43,7 +42,7 @@
 
     <properties>
         <banking-services-bom.version>2.19.1.1</banking-services-bom.version>
-        <boat-maven-plugin.version>0.2.3</boat-maven-plugin.version>
+        <boat-maven-plugin.version>0.2.5</boat-maven-plugin.version>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
         <openapi-generator-maven-plugin.language>spring</openapi-generator-maven-plugin.language>
         <openapi-generator-maven-plugin.library>spring-boot</openapi-generator-maven-plugin.library>

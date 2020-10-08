@@ -1,23 +1,17 @@
 package com.backbase.stream.service;
 
-import com.backbase.dbs.user.presentation.service.api.UsersApi;
-import com.backbase.dbs.user.presentation.service.model.AddRealm;
-import com.backbase.dbs.user.presentation.service.model.AssignRealm;
-import com.backbase.dbs.user.presentation.service.model.BatchUser;
-import com.backbase.dbs.user.presentation.service.model.CreateIdentityRequest;
-import com.backbase.dbs.user.presentation.service.model.CreateUser;
-import com.backbase.dbs.user.presentation.service.model.GetUserById;
-import com.backbase.dbs.user.presentation.service.model.GetUsersByLegalEntityIds;
-import com.backbase.dbs.user.presentation.service.model.GetUsersByLegalEntityIdsResponse;
-import com.backbase.dbs.user.presentation.service.model.Realm;
-import com.backbase.dbs.user.presentation.service.model.ReplaceIdentity;
-import com.backbase.dbs.user.presentation.service.model.UserCreated;
+import com.backbase.dbs.user.integration.api.UsersApi;
+import com.backbase.dbs.user.integration.model.AssignRealm;
+import com.backbase.dbs.user.integration.model.IdPost;
+import com.backbase.dbs.user.integration.model.UserItem;
+import com.backbase.dbs.user.integration.model.UserItemGet;
 import com.backbase.stream.legalentity.model.IdentityUserLinkStrategy;
 import com.backbase.stream.legalentity.model.LegalEntity;
 import com.backbase.stream.legalentity.model.User;
 import com.backbase.stream.mapper.RealmMapper;
 import com.backbase.stream.mapper.UserMapper;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,6 +22,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import sun.security.krb5.Realm;
 
 /**
  * Stream User Management. Still needs to be adapted to use Identity correctly
@@ -49,7 +44,7 @@ public class UserService {
      * @return User if exists. Empty if not.
      */
     public Mono<User> getUserByExternalId(String externalId) {
-        return usersApi.getExternalIdByExternalIdgetUserByExternalId(externalId)
+        return usersApi.getExternalIdexternalId(externalId)
             .doOnNext(userItem -> log.info("Found user: {} for externalId: {}", userItem.getFullName(), userItem.getExternalId()))
             .onErrorResume(WebClientResponseException.NotFound.class, notFound ->
                 handleUserNotFound(externalId, notFound.getResponseBodyAsString()))
@@ -63,7 +58,7 @@ public class UserService {
      * @return Identity User
      */
     public Mono<User> getIdentityUserByExternalId(String externalId) {
-        return usersApi.getExternalIdByExternalIdgetUserByExternalId(externalId)
+        return usersApi.getExternalIdexternalId(externalId)
             .doOnNext(userItem -> log.info("Found user: {} for externalId: {}", userItem.getFullName(), userItem.getExternalId()))
             .onErrorResume(WebClientResponseException.NotFound.class, notFound ->
                 handleUserNotFound(externalId, notFound.getResponseBodyAsString()))
@@ -71,16 +66,16 @@ public class UserService {
     }
 
 
-    private Mono<? extends GetUserById> handleUserNotFound(String externalId, String responseBodyAsString) {
+    private Mono<UserItemGet> handleUserNotFound(String externalId, String responseBodyAsString) {
         log.info("User with externalId: {} does not exist: {}", externalId, responseBodyAsString);
         return Mono.empty();
     }
 
     public Mono<User> createUser(User user, String legalEntityExternalId) {
-        CreateUser createUser = mapper.toPresentation(user);
+        UserItem createUser = mapper.toPresentation(user);
         createUser.setLegalEntityExternalId(legalEntityExternalId);
 
-        return usersApi.postUsers(createUser)
+        return usersApi.postBulk(Collections.singletonList(createUser))
             .doOnError(WebClientResponseException.class, e -> handleCreateUserError(user, e))
             .map(userCreated -> handleCreateUserResult(user, userCreated));
     }
@@ -213,15 +208,15 @@ public class UserService {
      * @param legalEntityInternalId
      * @return the same User with updated internal and external id on success
      */
-    public Mono<User> createOrImportIdentityUser(User user, String legalEntityInternalId) {
-        CreateIdentityRequest createIdentityRequest = new CreateIdentityRequest();
-        createIdentityRequest.setLegalEntityInternalId(legalEntityInternalId);
-        createIdentityRequest.setExternalId(user.getExternalId());
+    public Mono<User> createOrImportIdentityUser(User user, String legalEntityExternalId) {
+        IdPost createIdentityRequest = new IdPost();
+        createIdentityRequest.setLegalEntityExternalId(legalEntityExternalId);
+        createIdentityRequest.setExternalId(user.getId());
 
         if (IdentityUserLinkStrategy.CREATE_IN_IDENTITY.equals(user.getIdentityLinkStrategy())) {
-            Objects.requireNonNull(user.getFullName(), "User Full Name is required for user: " + user.getExternalId() + " in legal entity: " + legalEntityInternalId);
-            Objects.requireNonNull(user.getEmailAddress(), "User Email Address is required for user: " + user.getExternalId() + " in legal entity: " + legalEntityInternalId);
-            Objects.requireNonNull(user.getMobileNumber(), "User Mobile Number is required for user: " + user.getExternalId() + " in legal entity: " + legalEntityInternalId);
+            Objects.requireNonNull(user.getFullName(), "User Full Name is required for user: " + user.getId() + " in legal entity: " + legalEntityExternalId);
+            Objects.requireNonNull(user.getEmailAddress(), "User Email Address is required for user: " + user.getId() + " in legal entity: " + legalEntityExternalId);
+            Objects.requireNonNull(user.getMobileNumber(), "User Mobile Number is required for user: " + user.getId() + " in legal entity: " + legalEntityExternalId);
 
             createIdentityRequest.setFullName(user.getFullName());
             createIdentityRequest.setEmailAddress(user.getEmailAddress().getAddress());
@@ -246,12 +241,13 @@ public class UserService {
     public Mono<Void> updateIdentityUserAttributes(User user) {
         ReplaceIdentity replaceIdentity = new ReplaceIdentity();
         replaceIdentity.attributes(user.getAttributes());
+
+        usersApi.
         return usersApi.putInternalIdByInternalId(user.getInternalId(), replaceIdentity);
     }
 
-    private User handleCreateUserResult(User user, UserCreated userCreated) {
-        log.info("Created user: {} with internalId: {}", user.getFullName(), userCreated.getId());
-        user.setInternalId(userCreated.getId());
+    private User handleCreateUserResult(User user, UserItem userCreated) {
+        log.info("Created user: {} with internalId: {}", user.getFullName(), userCreated.getExternalId());
         return user;
     }
 

@@ -1,8 +1,9 @@
 package com.backbase.stream.transaction;
 
-import com.backbase.dbs.transaction.presentation.service.api.TransactionsApi;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionIds;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItemPost;
+import com.backbase.dbs.transaction.integration.api.TransactionsApi;
+import com.backbase.dbs.transaction.integration.model.SchemasTransactionPost;
+import com.backbase.dbs.transaction.integration.model.TransactionPost;
+import com.backbase.dbs.transaction.integration.model.TransactionPostResponse;
 import com.backbase.stream.worker.StreamTaskExecutor;
 import com.backbase.stream.worker.exception.StreamTaskException;
 import java.util.List;
@@ -22,17 +23,17 @@ public class TransactionTaskExecutor implements StreamTaskExecutor<TransactionTa
 
     @Override
     public Mono<TransactionTask> executeTask(TransactionTask streamTask) {
-        List<TransactionItemPost> data = streamTask.getData();
-        String externalIds = streamTask.getData().stream().map(TransactionItemPost::getExternalId).collect(Collectors.joining(","));
+        List<SchemasTransactionPost> data = streamTask.getData();
+        String ids = streamTask.getData().stream().map(SchemasTransactionPost::getId).collect(Collectors.joining(","));
         log.info("Post {} transactions: ", data.size());
         return transactionsApi.postTransactions(data)
             .onErrorResume(WebClientResponseException.class, throwable -> {
-                streamTask.error("transactions", "post", "failed", externalIds, null, throwable, throwable.getResponseBodyAsString(), "Failed to ingest transactions");
+                streamTask.error("transactions", "post", "failed", ids, null, throwable, throwable.getResponseBodyAsString(), "Failed to ingest transactions");
                 return Mono.error(new StreamTaskException(streamTask, throwable, "Failed to Ingest Transactions: " + throwable.getResponseBodyAsString()));
             })
             .collectList()
             .map(transactionIds -> {
-                streamTask.error("transactions", "post", "success", externalIds, transactionIds.stream().map(TransactionIds::getId).collect(Collectors.joining(",")), "Ingested Transactions");
+                streamTask.error("transactions", "post", "success", ids, transactionIds.stream().map(TransactionPostResponse::getId).collect(Collectors.joining(",")), "Ingested Transactions");
                 streamTask.setResponse(transactionIds);
                 return streamTask;
             });

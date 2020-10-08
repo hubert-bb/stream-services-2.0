@@ -1,9 +1,9 @@
 package com.backbase.stream;
 
-import com.backbase.stream.productcatalog.model.BackbaseProductKind;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
-import com.backbase.stream.productcatalog.model.ProductKind;
-import com.backbase.stream.productcatalog.model.ProductType;
+import com.backbase.stream.legalentity.model.BackbaseProductKind;
+import com.backbase.stream.legalentity.model.ProductCatalog;
+import com.backbase.stream.legalentity.model.ProductKind;
+import com.backbase.stream.legalentity.model.ProductType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -111,8 +111,8 @@ public class SetupProductCatalogApplicationTests {
 
     private ProductType createProductType(String id, String name, ProductKind productKind) {
         return new ProductType()
-            .externalProductId(id)
-            .externalProductKindId(productKind.getExternalKindId())
+            .id(id)
+            .productKindId(productKind.getExternalKindId())
             .externalProductTypeId(productKind.getKindName())
             .productTypeName(name);
     }

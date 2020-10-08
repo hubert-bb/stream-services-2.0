@@ -1,5 +1,7 @@
 package com.backbase.stream.mapper;
 
+import com.backbase.dbs.user.integration.model.UserItem;
+import com.backbase.dbs.user.integration.model.UserItemGet;
 import com.backbase.dbs.user.presentation.service.model.CreateUser;
 import com.backbase.dbs.user.presentation.service.model.GetUserById;
 import com.backbase.stream.legalentity.model.User;
@@ -10,9 +12,8 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
 
-    @Mapping(source = "id", target = "internalId")
-    User toStream(GetUserById userItem);
+    User toStream(UserItemGet userItem);
 
     @Mapping(source = "legalEntityId", target = "legalEntityExternalId")
-    CreateUser toPresentation(User user);
+    UserItem toPresentation(User user);
 }

@@ -1,7 +1,6 @@
 package com.backbase.stream.transaction.sink;
 
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItemPost;
-import com.backbase.stream.TransactionService;
+import com.backbase.dbs.transaction.integration.model.SchemasTransactionPost;
 import com.backbase.stream.transaction.TransactionTask;
 import com.backbase.stream.worker.UnitOfWorkExecutor;
 import com.backbase.stream.worker.model.UnitOfWork;
@@ -29,7 +28,7 @@ public class TransactionSinkBinding {
      * @param transactionItems List of transactions
      */
     @StreamListener(Sink.INPUT)
-    public void accept(List<TransactionItemPost> transactionItems) {
+    public void accept(List<SchemasTransactionPost> transactionItems) {
 
         String unitOfOWorkId = "transaction-sink-" + System.currentTimeMillis();
         UnitOfWork<TransactionTask> transactionTaskUnitOfWork = UnitOfWork.from(

@@ -3,8 +3,7 @@ package com.backbase.stream.transaction.generator;
 import static com.backbase.stream.transaction.utils.CommonHelpers.generateRandomNumberInRange;
 import static com.backbase.stream.transaction.utils.CommonHelpers.getRandomFromList;
 
-import com.backbase.dbs.transaction.presentation.service.model.CreditDebitIndicator;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItemPost;
+import com.backbase.dbs.transaction.integration.model.TransactionPost;
 import com.backbase.stream.cursor.model.IngestionCursor;
 import com.backbase.stream.transaction.generator.configuration.TransactionGeneratorOptions;
 import com.backbase.stream.transaction.utils.CommonHelpers;
@@ -42,16 +41,16 @@ public class TransactionGenerator {
      * @param max             Maximum number of Transactions to generate
      * @return List of generated transactions
      */
-    public List<TransactionItemPost> generate(IngestionCursor ingestionCursor, int min, int max) {
+    public List<TransactionPost> generate(IngestionCursor ingestionCursor, int min, int max) {
         int numberOfTxToGenerate = RandomUtils.nextInt(min, max);
-        List<TransactionItemPost> transactionItemPosts = new ArrayList<>();
+        List<TransactionPost> transactionItemPosts = new ArrayList<>();
         for (int i = 0; i < numberOfTxToGenerate; i++) {
             transactionItemPosts.add(generate(ingestionCursor));
         }
         return transactionItemPosts;
     }
 
-    public TransactionItemPost generate(IngestionCursor ingestionCursor) {
+    public TransactionPost generate(IngestionCursor ingestionCursor) {
         LocalDate bookingDate;
         if (ingestionCursor.getDateFrom() != null) {
             LocalDate lastDate = ingestionCursor.getDateFrom();
@@ -70,16 +69,15 @@ public class TransactionGenerator {
 
         OffsetDateTime offsetDateTime = bookingDate.atTime(OffsetTime.now());
 
-        CreditDebitIndicator isCredit = CommonHelpers.getRandomFromEnumValues(CreditDebitIndicator.values());
+        TransactionPost.CreditDebitIndicatorEnum isCredit = CommonHelpers.getRandomFromEnumValues(TransactionPost.CreditDebitIndicatorEnum.values());
 
-        String randomCategory = isCredit.equals(CreditDebitIndicator.CRDT)
+        String randomCategory = isCredit.equals(TransactionPost.CreditDebitIndicatorEnum.CRDT)
             ? getRandomFromList(transactionGeneratorOptions.getCreditRetailCategories())
             : getRandomFromList(transactionGeneratorOptions.getDebitRetailCategories());
 
-        TransactionItemPost transactionItemPost = new TransactionItemPost()
-            .externalId(UUID.randomUUID().toString())
+        TransactionPost transactionItemPost = new TransactionPost()
+            .id(UUID.randomUUID().toString())
             .arrangementId(ingestionCursor.getArrangementId())
-            .externalArrangementId(ingestionCursor.getExternalArrangementId())
             .reference(faker.lorem().characters(10))
             .description(faker.lorem().sentence().replace(".", ""))
             .bookingDate(offsetDateTime.toLocalDate())
@@ -98,7 +96,7 @@ public class TransactionGenerator {
 
         log.info("Creating random transaction for ingestion cursor: {} -> {} with date: {}",
             ingestionCursor.getExternalArrangementId(),
-            transactionItemPost.getExternalId(),
+            transactionItemPost.getId(),
             transactionItemPost.getBookingDate());
         return transactionItemPost;
     }

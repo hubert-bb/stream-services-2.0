@@ -1,12 +1,13 @@
 package com.backbase.stream;
 
-import com.backbase.dbs.transaction.presentation.service.api.TransactionsApi;
-import com.backbase.dbs.transaction.presentation.service.model.ArrangementItem;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionIds;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItem;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItemPatch;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionItemPost;
-import com.backbase.dbs.transaction.presentation.service.model.TransactionsDeleteRequestBody;
+import com.backbase.dbs.transaction.integration.api.TransactionsApi;
+import com.backbase.dbs.transaction.integration.model.ArrangementItem;
+import com.backbase.dbs.transaction.integration.model.SchemasTransactionPost;
+import com.backbase.dbs.transaction.integration.model.TransactionItem;
+import com.backbase.dbs.transaction.integration.model.TransactionPostResponse;
+import com.backbase.dbs.transaction.integration.model.TransactionsDeleteRequestBody;
+import com.backbase.dbs.transaction.integration.model.TransactionsGet;
+import com.backbase.dbs.transaction.integration.model.TransactionsPatchRequestBody;
 import com.backbase.stream.transaction.TransactionTask;
 import com.backbase.stream.transaction.TransactionUnitOfWorkExecutor;
 import com.backbase.stream.transaction.TransactionsQuery;
@@ -41,14 +42,14 @@ public class TransactionService {
      * @param transactions Unbounded list of Transactions
      * @return Ingestion Transactions IDs
      */
-    public Flux<TransactionIds> processTransactions(Flux<TransactionItemPost> transactions) {
+    public Flux<TransactionPostResponse> processTransactions(Flux<SchemasTransactionPost> transactions) {
         Flux<UnitOfWork<TransactionTask>> unitOfWorkFlux = transactionTaskExecutor.prepareUnitOfWork(transactions);
         return unitOfWorkFlux.flatMap(transactionTaskExecutor::executeUnitOfWork)
             .flatMap(this::getTransactionIdsFlux);
     }
 
-    private Flux<TransactionIds> getTransactionIdsFlux(UnitOfWork<TransactionTask> unitOfWork) {
-        Stream<TransactionIds> transactionIdsStream = unitOfWork.getStreamTasks().stream()
+    private Flux<TransactionPostResponse> getTransactionIdsFlux(UnitOfWork<TransactionTask> unitOfWork) {
+        Stream<TransactionPostResponse> transactionIdsStream = unitOfWork.getStreamTasks().stream()
             .map(TransactionTask::getResponse)
             .flatMap(Collection::stream);
         return Flux.fromStream(transactionIdsStream);
@@ -66,7 +67,7 @@ public class TransactionService {
         TransactionsQuery transactionsQuery = new TransactionsQuery();
         transactionsQuery.setArrangementId(arrangementId);
         transactionsQuery.setSize(size);
-        return getTransactions(transactionsQuery)
+        return getTransactionsFlux(transactionsQuery)
             .onErrorResume(WebClientResponseException.NotFound.class, ex -> {
                 log.info("No transactions found for: {} message: {}", arrangementId, ex.getResponseBodyAsString());
                 return Flux.empty();
@@ -94,7 +95,12 @@ public class TransactionService {
      * @param transactionsQuery Transaction Query
      * @return A list of transactions
      */
-    public Flux<TransactionItem> getTransactions(TransactionsQuery transactionsQuery) {
+    public Flux<TransactionItem> getTransactionsFlux(TransactionsQuery transactionsQuery) {
+        return getTransactions(transactionsQuery)
+            .flatMapMany(transactionsGet -> Flux.fromIterable(transactionsGet.getTransactionItems()));
+    }
+
+    public Mono<TransactionsGet> getTransactions(TransactionsQuery transactionsQuery) {
         return transactionsApi.getTransactions(
             transactionsQuery.getAmountGreaterThan(),
             transactionsQuery.getAmountLessThan(),
@@ -110,7 +116,6 @@ public class TransactionService {
             transactionsQuery.getCategory(),
             transactionsQuery.getCategories(),
             transactionsQuery.getBillingStatus(),
-            transactionsQuery.getState(),
             transactionsQuery.getCurrency(),
             transactionsQuery.getNotes(),
             transactionsQuery.getId(),
@@ -134,7 +139,7 @@ public class TransactionService {
      * @param transactionItems Updated category and billing status fields
      * @return empty mono on completion
      */
-    public Mono<Void> patchTransactions(Flux<TransactionItemPatch> transactionItems) {
+    public Mono<Void> patchTransactions(Flux<TransactionsPatchRequestBody> transactionItems) {
         return transactionItems
             .collectList()
             .flatMap(transactionsApi::patchTransactions);

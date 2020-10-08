@@ -15,7 +15,7 @@
 
     <properties>
         <sonar.skip>true</sonar.skip>
-        <boat-maven-plugin.version>0.2.4</boat-maven-plugin.version>
+        <boat-maven-plugin.version>0.2.5</boat-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -61,6 +61,12 @@
             <scope>provided</scope>
 <!--            <version>${arrangement-manager.version}</version>-->
 <!--            <type>jar</type>-->
+        </dependency>
+
+        <dependency>
+            <groupId>com.backbase.dbs.approval</groupId>
+            <artifactId>approval-integration-spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>com.backbase.dbs.account</groupId>-->
@@ -174,20 +180,21 @@
                         </configuration>
                     </execution>
 
-<!--                    <execution>-->
-<!--                        <id>accounts-presentation-service</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>generate-webclient-embedded</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>-->
-<!--                                ${project.basedir}/api/com/backbase/dbs/account/account-presentation-spec/service-api/service-api/openapi.yaml-->
-<!--                            </inputSpec>-->
-<!--                            <modelPackage>com.backbase.dbs.accounts.presentation.service.model</modelPackage>-->
-<!--                            <apiPackage>com.backbase.dbs.accounts.presentation.service.api</apiPackage>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
+                    <execution>
+                        <id>approval-integration-spec</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-webclient-embedded</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/api/com/backbase/dbs/approval/approval-integration-spec/client-api/client-api/openapi.yaml
+                            </inputSpec>
+                            <modelPackage>com.backbase.dbs.approval.integration.model</modelPackage>
+                            <apiPackage>com.backbase.dbs.approval.integration.api</apiPackage>
+                        </configuration>
+                    </execution>
+
                     <execution>
                         <id>user-manager-service</id>
                         <phase>generate-sources</phase>
@@ -231,7 +238,7 @@
                     <!--                        </configuration>-->
                     <!--                    </execution>-->
                     <execution>
-                        <id>transaction-presentation-service</id>
+                        <id>transaction-integration-service</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-webclient-embedded</goal>
@@ -242,20 +249,6 @@
                             </inputSpec>
                             <modelPackage>com.backbase.dbs.transaction.integration.model</modelPackage>
                             <apiPackage>com.backbase.dbs.transaction.integration.api</apiPackage>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>audit-presentation-service</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-webclient-embedded</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>
-                                ${project.basedir}/api/com/backbase/dbs/audit/audit-spec/integration-api/integration-api/openapi.yaml
-                            </inputSpec>
-                            <modelPackage>com.backbase.dbs.integration.model</modelPackage>
-                            <apiPackage>com.backbase.dbs.integration.api</apiPackage>
                         </configuration>
                     </execution>
                     <execution>

@@ -1,7 +1,7 @@
 package com.backbase.stream.productcatalog.configuration;
 
+import com.backbase.stream.legalentity.model.ProductCatalog;
 import com.backbase.stream.productcatalog.ProductCatalogService;
-import com.backbase.stream.productcatalog.model.ProductCatalog;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

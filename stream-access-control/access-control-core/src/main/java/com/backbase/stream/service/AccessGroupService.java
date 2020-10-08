@@ -2,14 +2,19 @@ package com.backbase.stream.service;
 
 import com.backbase.dbs.accesscontrol.integration.api.AccessgroupsApi;
 import com.backbase.dbs.accesscontrol.integration.model.BatchResponseItemExtended;
+import com.backbase.dbs.accesscontrol.integration.model.FunctionGroupBase;
+import com.backbase.dbs.accesscontrol.integration.model.FunctionGroupItem;
 import com.backbase.dbs.accesscontrol.integration.model.IdItem;
 import com.backbase.dbs.accesscontrol.integration.model.IntegrationAssignUserPermissions;
+import com.backbase.dbs.accesscontrol.integration.model.IntegrationDataGroupDetails;
 import com.backbase.dbs.accesscontrol.integration.model.IntegrationFunctionGroupDataGroup;
 import com.backbase.dbs.accesscontrol.integration.model.IntegrationIdentifier;
 import com.backbase.dbs.accesscontrol.integration.model.IntegrationSearchDataGroupsRequest;
+import com.backbase.dbs.accesscontrol.integration.model.Permission;
 import com.backbase.dbs.accesscontrol.integration.model.ServiceAgreementIdentifier;
 import com.backbase.dbs.accesscontrol.integration.model.ServicesAgreement;
 import com.backbase.dbs.accesscontrol.integration.model.UserServiceAgreementPair;
+import com.backbase.dbs.approval.integration.api.ApprovalTypeAssignmentsApi;
 import com.backbase.dbs.user.integration.api.UsersApi;
 import com.backbase.stream.legalentity.model.ApprovalStatus;
 import com.backbase.stream.legalentity.model.AssignedPermission;
@@ -71,6 +76,8 @@ public class AccessGroupService {
 
     private final AccessgroupsApi accessGroupIntegrationApi;
     private final UsersApi usersApi;
+
+    private final ApprovalTypeAssignmentsApi
 
 
     private final AccessGroupMapper accessGroupMapper = Mappers.getMapper(AccessGroupMapper.class);
@@ -175,49 +182,39 @@ public class AccessGroupService {
             })
             .flatMap(batchResponseItemExtended -> {
 
-                batchResponseItemExtended.getAction()
-
             })
             .map(jobProfileUser::approvalStatus);
 
     }
 
-    private Mono<? extends ApprovalStatus> processApprovalStatus(
-        PresentationApprovalStatus presentationApprovalStatus) {
-        if (presentationApprovalStatus.getApprovalStatus() != null) {
-            return Mono.just(accessGroupMapper.map(presentationApprovalStatus.getApprovalStatus()));
-        } else {
-            return Mono.empty();
-        }
-    }
+//    private Mono<? extends ApprovalStatus> processApprovalStatus(
+//        PresentationApprovalStatus presentationApprovalStatus) {
+//        if (presentationApprovalStatus.getApprovalStatus() != null) {
+//            return Mono.just(accessGroupMapper.map(presentationApprovalStatus.getApprovalStatus()));
+//        } else {
+//            return Mono.empty();
+//        }
+//    }
 
     public Mono<BatchProductGroupTask> assignPermissionsBatch(BatchProductGroupTask task, Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions) {
 
-        ArrayList<IntegrationAssignUserPermissions> integrationAssignUserPermissions = new ArrayList<>();
-
-
-
-
-
-
-        List<PresentationAssignUserPermissions> request = usersPermissions.keySet().stream()
-            .map(user -> new PresentationAssignUserPermissions()
+        return Mono.just(usersPermissions.keySet().stream()
+            .map(user -> new IntegrationAssignUserPermissions()
                 .externalUserId(user.getId())
                 .externalServiceAgreementId(task.getData().getServiceAgreement().getId())
                 .functionGroupDataGroups(
                     usersPermissions.get(user).keySet().stream()
-                        .map(bfg -> new PresentationFunctionGroupDataGroup()
-                            .functionGroupIdentifier(new PresentationIdentifier().idIdentifier(bfg.getId()))
+                        .map(bfg -> new IntegrationFunctionGroupDataGroup()
+                            .functionGroupIdentifier(new IntegrationIdentifier().idIdentifier(bfg.getId()))
                             .dataGroupIdentifiers(
                                 usersPermissions.get(user).get(bfg).stream()
-                                    .map(pg -> new PresentationIdentifier().idIdentifier(pg.getId()))
+                                    .map(pg -> new IntegrationIdentifier().idIdentifier(pg.getId()))
                                     .collect(Collectors.toList())))
                         .collect(Collectors.toList())))
-            .collect(Collectors.toList());
-        return Mono.just(request)
-            .flatMap(r -> {
+            .collect(Collectors.toList()))
+            .flatMap(assignUserPermissions -> {
                 if (task.getIngestionMode().equals(BatchProductGroupTask.IngestionMode.REPLACE)) {
-                    return Mono.just(r);
+                    return Mono.just(assignUserPermissions);
                 }
 
                 ArrayList<IntegrationAssignUserPermissions> integrationAssignUserPermissions = new ArrayList<>();
@@ -226,38 +223,42 @@ public class AccessGroupService {
 
                 // request each user permissions and add those to the request.
                 return Flux.fromIterable(usersPermissions.keySet())
-                    .flatMap(user -> accessGroupIntegrationApi.getPermissionsByUserIdAndServiceAgreementId(user.getId(), task.getData().getServiceAgreement().getId())
-                        .onErrorResume(WebClientResponseException.NotFound.class, e -> Mono.empty())
-                        .map(PersistenceApprovalPermissions::getItems)
-                        .map(existingUserPermissions -> {
-                            log.debug("Retrieved permissions for user with externalId {} : {}", user.getId(),
-                                existingUserPermissions.stream().map(p -> p.getFunctionGroupId() + " : [" + p.getDataGroupIds() + "] ").collect(Collectors.toList()));
-                            PresentationAssignUserPermissions requestUserPermissions =
-                                request.stream()
-                                    .filter(up -> up.getExternalUserId().equalsIgnoreCase(user.getId()))
-                                    .findFirst()
-                                    .orElseThrow(() -> new IllegalStateException("Permissions for user not present in request?"));
-                            // merge user permissions in  DBS with the ones already  in request.
-                            existingUserPermissions.forEach(p -> {
-                                assert p.getDataGroupIds() != null;
-                                boolean inRequest = requestUserPermissions.getFunctionGroupDataGroups().stream()
-                                    .anyMatch(rf -> p.getFunctionGroupId().equalsIgnoreCase(rf.getFunctionGroupIdentifier().getIdIdentifier()));
-                                // add existing permissions for datagroups which are  not present in update request.
-                                if (!inRequest) {
-                                    requestUserPermissions.addFunctionGroupDataGroupsItem(
-                                        new PresentationFunctionGroupDataGroup()
-                                            .functionGroupIdentifier(new PresentationIdentifier().idIdentifier(p.getFunctionGroupId()))
-                                            .dataGroupIdentifiers(p.getDataGroupIds().stream()
-                                                .map(groupId -> new PresentationIdentifier().idIdentifier(groupId))
-                                                .collect(Collectors.toList())));
-                                }
+                    .flatMap(user -> {
+
+                        accessGroupIntegrationApi.postSearch()
+                        return accessGroupIntegrationApi.getPermissionsByUserIdAndServiceAgreementId(user.getId(), task.getData().getServiceAgreement().getId())
+                            .onErrorResume(WebClientResponseException.NotFound.class, e -> Mono.empty())
+                            .map(PersistenceApprovalPermissions::getItems)
+                            .map(existingUserPermissions -> {
+                                log.debug("Retrieved permissions for user with externalId {} : {}", user.getId(),
+                                    existingUserPermissions.stream().map(p -> p.getFunctionGroupId() + " : [" + p.getDataGroupIds() + "] ").collect(Collectors.toList()));
+                                IntegrationAssignUserPermissions requestUserPermissions =
+                                    assignUserPermissions.stream()
+                                        .filter(up -> up.getExternalUserId().equalsIgnoreCase(user.getId()))
+                                        .findFirst()
+                                        .orElseThrow(() -> new IllegalStateException("Permissions for user not present in request?"));
+                                // merge user permissions in  DBS with the ones already  in request.
+                                existingUserPermissions.forEach(p -> {
+                                    assert p.getDataGroupIds() != null;
+                                    boolean inRequest = requestUserPermissions.getFunctionGroupDataGroups().stream()
+                                        .anyMatch(rf -> p.getFunctionGroupId().equalsIgnoreCase(rf.getFunctionGroupIdentifier().getIdIdentifier()));
+                                    // add existing permissions for datagroups which are  not present in update request.
+                                    if (!inRequest) {
+                                        requestUserPermissions.addFunctionGroupDataGroupsItem(
+                                            new IntegrationFunctionGroupDataGroup()
+                                                .functionGroupIdentifier(new IntegrationIdentifier().idIdentifier(p.getFunctionGroupId()))
+                                                .dataGroupIdentifiers(p.getDataGroupIds().stream()
+                                                    .map(groupId -> new PresentationIdentifier().idIdentifier(groupId))
+                                                    .collect(Collectors.toList())));
+                                    }
+                                });
+                                return requestUserPermissions;
                             });
-                            return requestUserPermissions;
-                        }))
+                    })
                     .collectList()
                     .thenReturn(request);
             })
-            .flatMap(mergedRequest -> accessGroupIntegrationApi.putUserpermissions(mergedRequest)
+            .flatMap(mergedRequest -> accessGroupIntegrationApi.putAssignUserPermissions(mergedRequest)
                 .map(r -> BatchResponseUtils.checkBatchResponseItem(r, "Permissions Update", r.getStatus().toString(), r.getResourceId(), r.getErrors()))
                 .doOnNext(r -> {
                     log.debug("Permissions update response status: {}", r.getStatus());
@@ -679,14 +680,14 @@ public class AccessGroupService {
             businessFunctionGroup.setDescription(businessFunctionGroup.getName());
         }
 
-        PresentationIngestFunctionGroup presentationIngestFunctionGroup = new PresentationIngestFunctionGroup();
-        presentationIngestFunctionGroup.setExternalServiceAgreementId(serviceAgreement.getId());
-        presentationIngestFunctionGroup.setDescription(businessFunctionGroup.getDescription());
-        presentationIngestFunctionGroup.setName(businessFunctionGroup.getName());
-        presentationIngestFunctionGroup.setPermissions(getPresentationPermissions(businessFunctionGroup));
-        presentationIngestFunctionGroup.setType(PresentationIngestFunctionGroup.TypeEnum.REGULAR);
+        FunctionGroupItem functionGroupItem = new FunctionGroupItem();
+        functionGroupItem.setExternalServiceAgreementId(serviceAgreement.getId());
+        functionGroupItem.setDescription(businessFunctionGroup.getDescription());
+        functionGroupItem.setName(businessFunctionGroup.getName());
+        functionGroupItem.setPermissions(getPresentationPermissions(businessFunctionGroup));
+        functionGroupItem.setType(FunctionGroupBase.TypeEnum.REGULAR);
 
-        return accessGroupIntegrationApi.postIngest(presentationIngestFunctionGroup)
+        return accessGroupIntegrationApi.postFunctionGroup(functionGroupItem)
             .doOnError(WebClientResponseException.BadRequest.class, badRequest ->
                 handleError(businessFunctionGroup, badRequest))
             .onErrorResume(WebClientResponseException.class, badRequest -> {
@@ -711,8 +712,7 @@ public class AccessGroupService {
             referenceJobRole.setDescription(referenceJobRole.getName());
         }
 
-        PresentationIngestFunctionGroup presentationIngestFunctionGroup =
-            accessGroupMapper.toPresentation(referenceJobRole);
+        PresentationIngestFunctionGroup presentationIngestFunctionGroup = accessGroupMapper.toPresentation(referenceJobRole);
         presentationIngestFunctionGroup
             .setPermissions(accessGroupMapper.toPresentation(referenceJobRole.getFunctionGroups()));
 
@@ -745,7 +745,7 @@ public class AccessGroupService {
         log.warn("Failed to create reference job role: {} Response: {}", referenceJobRole, badRequest.getResponseBodyAsString());
     }
 
-    private List<PresentationPermission> getPresentationPermissions(BusinessFunctionGroup businessFunctionGroup) {
+    private List<Permission> getPresentationPermissions(BusinessFunctionGroup businessFunctionGroup) {
         return businessFunctionGroup.getFunctions().stream()
             .map(this::mapPresentationBusinessFunction)
             .collect(Collectors.toList());
@@ -796,9 +796,8 @@ public class AccessGroupService {
 
 
     @SuppressWarnings("ConstantConditions")
-    private Flux<String> getDataGroupItemIds(String type,
-                                             ServiceAgreementIdentifier serviceAgreementIdentifier) {
-        return accessGroupIntegrationApi.postSearch(type, new IntegrationSearchDataGroupsRequest()
+    private Flux<String> getDataGroupItemIds(String type, ServiceAgreementIdentifier serviceAgreementIdentifier) {
+        Flux<IntegrationDataGroupDetails> integrationDataGroupDetailsFlux = accessGroupIntegrationApi.postSearch(type, new IntegrationSearchDataGroupsRequest()
             .serviceAgreementIdentifier(serviceAgreementIdentifier))
             .flatMap(item -> {
                 if (item.getDataGroups() != null) {
@@ -806,7 +805,8 @@ public class AccessGroupService {
                 } else {
                     return Flux.empty();
                 }
-            })
+            });
+        return integrationDataGroupDetailsFlux
             .flatMap(details -> getExistingDataGroups(details.getId(), null))
             .flatMap(dataGroupItem -> Flux.fromIterable(dataGroupItem.getItems()));
     }
@@ -819,7 +819,7 @@ public class AccessGroupService {
         log.info("Setup {} Reference job role for Service Agreement: {}", referenceJobRole.getName(),
             masterServiceAgreement.getId());
 
-        return accessGroupIntegrationApi.getFunctiongroups(masterServiceAgreement.getId())
+        return accessGroupIntegrationApi.getBusinessfunctions(masterServiceAgreement.getId())
             .onErrorResume(WebClientResponseException.class, e -> {
                 log.error("Failed to get Function Groups for Service Agreement: {} Response: {}",
                     masterServiceAgreement.getId(), e.getResponseBodyAsString());

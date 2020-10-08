@@ -1,7 +1,7 @@
 package com.backbase.stream.configuration;
 
-import com.backbase.dbs.transaction.presentation.service.ApiClient;
-import com.backbase.dbs.transaction.presentation.service.api.TransactionsApi;
+import com.backbase.dbs.transaction.integration.ApiClient;
+import com.backbase.dbs.transaction.integration.api.TransactionsApi;
 import com.backbase.stream.TransactionService;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
 import com.backbase.stream.transaction.TransactionTask;
@@ -31,8 +31,8 @@ public class TransactionServiceConfiguration {
 
 
     @Bean
-    public TransactionTaskExecutor transactionTaskExecutor(ApiClient transactionPresentationApiClient) {
-        TransactionsApi transactionsApi = new TransactionsApi(transactionPresentationApiClient);
+    public TransactionTaskExecutor transactionTaskExecutor(ApiClient transactionIntegrationClient) {
+        TransactionsApi transactionsApi = new TransactionsApi(transactionIntegrationClient);
         return new TransactionTaskExecutor(transactionsApi);
     }
 

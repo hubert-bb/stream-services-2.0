@@ -1,6 +1,6 @@
 package com.backbase.stream.productcatalog.configuration;
 
-import com.backbase.stream.productcatalog.model.ProductCatalog;
+import com.backbase.stream.legalentity.model.ProductCatalog;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

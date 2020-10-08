@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <boat-maven-plugin.version>0.2.1</boat-maven-plugin.version>
+        <boat-maven-plugin.version>0.2.5</boat-maven-plugin.version>
         <banking-services-bom.version>2.18.2.1</banking-services-bom.version>
     </properties>
 
@@ -20,20 +20,6 @@
     <packaging>jar</packaging>
     <name>Stream :: Transaction HTTP</name>
 
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.backbase.dbs</groupId>
-                <artifactId>banking-services-bom</artifactId>
-                <version>${banking-services-bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-
     <dependencies>
 
         <dependency>
@@ -41,8 +27,6 @@
             <artifactId>transactions-core</artifactId>
             <version>3.0.0</version>
         </dependency>
-
-
 
     </dependencies>
 
@@ -54,18 +38,6 @@
                 <version>${boat-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>raml2openapi</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>export-dep</goal>
-                        </goals>
-                        <configuration>
-                            <includeVersionInOutputDirectory>false</includeVersionInOutputDirectory>
-                            <decompose>true</decompose>
-                            <removeDeprecated>true</removeDeprecated>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>cursor</id>
                         <phase>generate-sources</phase>
                         <goals>
@@ -73,8 +45,11 @@
                         </goals>
                         <configuration>
                             <generatorName>spring</generatorName>
-                            <inputSpec>${project.basedir}/../../api/stream-transactions/openapi.yaml</inputSpec>
+                            <inputSpec>
+                                ${project.basedir}/../../stream-dbs-clients/api/com/backbase/dbs/transaction/transaction-integration-external-inbound-spec/integration-api/integration-api/openapi.yaml
+                            </inputSpec>
                             <generateApiTests>false</generateApiTests>
+                            <generateModels>false</generateModels>
                             <output>${openapi-generator-maven-plugin.output}</output>
                             <configOptions>
                                 <library>spring-boot</library>
@@ -83,8 +58,9 @@
                                 <dateLibrary>java8</dateLibrary>
                                 <openapiDocketConfig>true</openapiDocketConfig>
                                 <interfaceOnly>true</interfaceOnly>
-                                <modelPackage>com.backbase.stream.transaction.inbound.model</modelPackage>
-                                <apiPackage>com.backbase.stream.transaction.inbound.api</apiPackage>
+                                <modelPackage>com.backbase.dbs.transaction.integration.model</modelPackage>
+                                <apiPackage>com.backbase.dbs.transaction.integration.controller.api</apiPackage>
+                                <useTags>true</useTags>
                                 <skipDefaultInterface>true</skipDefaultInterface>
                                 <performBeanValidation>true</performBeanValidation>
                                 <apis/>

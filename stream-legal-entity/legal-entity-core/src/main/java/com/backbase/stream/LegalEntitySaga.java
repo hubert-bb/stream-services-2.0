@@ -142,7 +142,7 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
             legalEntityService.getLegalEntityByExternalId(legalEntityExternalId))
             .flatMap(data -> {
                 LegalEntity le = data.getT2();
-                return userService.getUsersByLegalEntity(le.getInternalId())
+                return userService.getUsersByLegalEntity(le.getId())
                     .map(usersByLegalEntityIdsResponse -> {
                         List<GetUserById> users = usersByLegalEntityIdsResponse.getUsers();
                         return Tuples.of(data.getT1(), le, users);
@@ -385,7 +385,7 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
         LegalEntity legalEntity = legalEntityTask.getData();
         Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> request = legalEntity.getUsers().stream()
             // Ensure internal Id present.
-            .filter(jobProfileUser -> Objects.nonNull(jobProfileUser.getUser().getInternalId()))
+            .filter(jobProfileUser -> Objects.nonNull(jobProfileUser.getUser().getId()))
             .collect(Collectors.toMap(
                 JobProfileUser::getUser,
                 jobProfileUser -> businessFunctionGroups.stream()

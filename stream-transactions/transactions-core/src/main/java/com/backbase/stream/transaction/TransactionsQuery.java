@@ -15,11 +15,9 @@ public class TransactionsQuery {
     private BigDecimal amountLessThan;
     private String bookingDateGreaterThan;
     private String bookingDateLessThan;
-    private String type;
     private List<String> types;
     private String description;
     private String reference;
-    private String typeGroup;
     private List<String> typeGroups;
     private String counterPartyName;
     private String counterPartyAccountNumber;
@@ -27,11 +25,9 @@ public class TransactionsQuery {
     private String category;
     private List<String> categories;
     private String billingStatus;
-    private String state;
     private String currency;
     private Integer notes;
     private String id;
-    private String productId;
     private String arrangementId;
     private List<String> arrangementsIds;
     private BigDecimal fromCheckSerialNumber;
