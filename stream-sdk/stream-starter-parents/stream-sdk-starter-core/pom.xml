@@ -81,6 +81,8 @@
         <!-- Stream Convention -->
         <jib-maven-plugin.image>${docker.repository.url}${project.artifactId}</jib-maven-plugin.image>
         <jib-maven-plugin.tag>${project.version}</jib-maven-plugin.tag>
+
+        <boat-maven-plugin.version>0.11.5-SNAPSHOT</boat-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -270,6 +272,11 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.backbase.oss</groupId>
+                    <artifactId>boat-maven-plugin</artifactId>
+                    <version>${boat-maven-plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>com.google.cloud.tools</groupId>
                     <artifactId>jib-maven-plugin</artifactId>
